@@ -1,2 +1,2 @@
 #!/bin/bash
-pylint --rcfile=pylint.rc chroniker setup.py bin/chroniker
+pylint --rcfile=pylint.rc feedz setup.py
