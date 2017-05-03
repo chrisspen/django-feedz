@@ -1,6 +1,6 @@
 import unittest2 as unittest
 
-from djangofeeds import optimization
+from feedz import optimization
 
 IMG1 = "http://feeds.feedburner.com/~r/Wulffmorgenthaler/~4/aFiizovyBmA"
 IMG2 = IMG1 + ":qUKuBzXJMEQ:V_sGLiPBpWU"
@@ -8,7 +8,7 @@ IMG3 = "http://a.rfihub.com/eus.gif?eui=2224"
 
 SERVICE_URLS = [IMG3, IMG1]
 
-IMG_LIMIT = optimization.DJANGOFEEDS_SMALL_IMAGE_LIMIT
+IMG_LIMIT = optimization.FEEDZ_SMALL_IMAGE_LIMIT
 
 
 class test_BeaconRemover(unittest.TestCase):
@@ -72,8 +72,8 @@ class test_BeaconRemover(unittest.TestCase):
             self.assertEqual(self.tracker_remover.optimize(tracker), '')
 
     def test_settings(self):
-        prev = optimization.DJANGOFEEDS_REMOVE_TRACKERS
-        optimization.DJANGOFEEDS_REMOVE_TRACKERS = False
+        prev = optimization.FEEDZ_REMOVE_TRACKERS
+        optimization.FEEDZ_REMOVE_TRACKERS = False
         try:
             to_img_tag = """<img src="%s" />"""
 
@@ -82,7 +82,7 @@ class test_BeaconRemover(unittest.TestCase):
                     self.tracker_remover.optimize(to_img_tag % url),
                     to_img_tag % url)
         finally:
-            optimization.DJANGOFEEDS_REMOVE_TRACKERS = prev
+            optimization.FEEDZ_REMOVE_TRACKERS = prev
 
     def assertIsBeacon(self, url):
         self.assertTrue(self.tracker_remover.looks_like_tracker(url))

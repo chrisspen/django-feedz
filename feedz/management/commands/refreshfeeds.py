@@ -1,4 +1,4 @@
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
 import sys
 import time
@@ -16,10 +16,13 @@ from django.utils import timezone
 
 from joblib import Parallel, delayed
 
-from djangofeeds.models import Feed
-from djangofeeds.importers import FeedImporter
+from feedz.models import Feed
+from feedz.importers import FeedImporter
 
-from chroniker.models import Job
+# try:
+#     from chroniker.models import Job
+# except ImportError:
+#     Job = None
 
 def print_feed_summary(feed_obj):
     """Dump a summary of the feed (how many posts etc.)."""
@@ -42,7 +45,6 @@ def get_feeds(importer, force=False, days=1, feed_ids=None, name_contains=None):
         q = q.filter(name__icontains=name_contains)
     return q
 
-#@transaction.commit_on_success
 def refresh_feed_helper(feed_id, cleanup=True):
     """
     Refreshes a specific feed.

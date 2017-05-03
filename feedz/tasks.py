@@ -7,9 +7,9 @@ try:
 except ImportError:
     use_celery = False
 
-from djangofeeds import conf
-from djangofeeds.models import Feed
-from djangofeeds.importers import FeedImporter
+from feedz import conf
+from feedz.models import Feed
+from feedz.importers import FeedImporter
 
 ENABLE_LOCKS = False
 
@@ -37,10 +37,13 @@ if use_celery:
             acquire_lock = release_lock = noop
             is_locked = lambda: False
 
-        logger = refresh_feed.get_logger(**kwargs)
+        logger = None
+        if hasattr(refresh_feed, 'get_logger'):
+            logger = refresh_feed.get_logger(**kwargs)
         print("Importing feed %s" % feed_url)
         if is_locked():
-            logger.error("Feed is already being imported by another process.")
+            if logger:
+                logger.error("Feed is already being imported by another process.")
             return feed_url
 
         acquire_lock()

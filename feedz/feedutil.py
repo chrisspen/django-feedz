@@ -13,13 +13,20 @@ from django.utils.text import Truncator
 import hashlib
 md5_constructor = hashlib.md5
 
-from djangofeeds import conf
-from djangofeeds.optimization import PostContentOptimizer
+from feedz import conf
+from feedz.optimization import PostContentOptimizer
 from django.utils.timezone import utc
 feed_content_optimizer = PostContentOptimizer()
 
 GUID_FIELDS = frozenset(("title", "link", "author"))
 
+def truncate_html_words(content, num=None):
+#        content = truncate_html_words(content, conf.DEFAULT_ENTRY_WORD_LIMIT)
+    end_text = '...'
+    num = num or conf.DEFAULT_ENTRY_WORD_LIMIT
+    truncate = end_text and ' %s' % end_text or ''
+    content = Truncator(content).words(num, truncate=truncate, html=True)
+    return content
 
 def format_date(t):
     """Make sure time object is a :class:`datetime.datetime` object."""
@@ -174,11 +181,7 @@ def find_post_content(feed_obj, entry):
             img = ""
         content = img + content
     try:
-#        content = truncate_html_words(content, conf.DEFAULT_ENTRY_WORD_LIMIT)
-        end_text = '...'
-        num = conf.DEFAULT_ENTRY_WORD_LIMIT
-        truncate = end_text and ' %s' % end_text or ''
-        content = Truncator(content).words(num, truncate=truncate, html=True)
+        content = truncate_html_words(content, num=conf.DEFAULT_ENTRY_WORD_LIMIT) 
     except UnicodeDecodeError:
         content = ""
 

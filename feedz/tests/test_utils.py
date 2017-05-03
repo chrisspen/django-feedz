@@ -2,8 +2,8 @@ import pytz
 import unittest2 as unittest
 from datetime import datetime, timedelta
 
-from djangofeeds.utils import naturaldate
-from djangofeeds.feedutil import (entries_by_date,
+from feedz.utils import naturaldate
+from feedz.feedutil import (entries_by_date,
                                   get_entry_guid,
                                   date_to_datetime)
 

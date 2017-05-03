@@ -4,8 +4,8 @@ import pytz
 from datetime import datetime
 from uuid import uuid4
 
-from djangofeeds import models
-from djangofeeds.utils import naturaldate
+from feedz import models
+from feedz.utils import naturaldate
 from django.utils.timezone import utc
 
 

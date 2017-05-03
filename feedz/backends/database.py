@@ -1,4 +1,4 @@
-from djangofeeds.models import Post
+from feedz.models import Post
 
 
 class DatabaseBackend(object):

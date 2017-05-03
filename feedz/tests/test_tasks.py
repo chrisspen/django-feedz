@@ -2,7 +2,7 @@ import unittest2 as unittest
 
 CELERY_MISSING = False
 try:
-    from djangofeeds import tasks
+    from feedz import tasks
 except ImportError:
     CELERY_MISSING = True
 

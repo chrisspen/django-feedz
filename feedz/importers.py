@@ -1,3 +1,4 @@
+from __future__ import print_function
 import time
 import re
 import socket
@@ -8,12 +9,12 @@ from pprint import pprint
 
 from datetime import datetime
 
-from djangofeeds import conf
-from djangofeeds import models
-from djangofeeds import feedutil
-from djangofeeds import exceptions
-from djangofeeds.utils import get_default_logger, truncate_field_data
-from djangofeeds.backends import backend_or_default
+from feedz import conf
+from feedz import models
+from feedz import feedutil
+from feedz import exceptions
+from feedz.utils import get_default_logger, truncate_field_data
+from feedz.backends import backend_or_default
 from django.utils.timezone import utc
 
 try:
@@ -303,9 +304,24 @@ class FeedImporter(object):
                         for key, handler in self.post_field_handlers.items())
 
     def import_entry(self, entry, feed_obj):
-        """Import feed post entry."""
-        from djangofeeds.models import BlacklistedDomain
-        self.logger.debug("Importing entry %s..." % feed_obj.feed_url)
+        """
+        Import feed post entry.
+        
+        Note, feed_obj.feed_url can be either a URL or full RSS document.
+        """
+        from feedz.models import BlacklistedDomain
+        print('='*80)
+        is_document = False
+        if not feed_obj.feed_url.endswith('.rss') and not feed_obj.feed_url.endswith('.html') and not feed_obj.feed_url.endswith('.xml'):
+            is_document = True
+#             print('Ignoring corrupt feed URL of length %i.' % len(feed_obj.feed_url))
+#             print('feed_obj.feed_url:', feed_obj.feed_url)
+#             print(type(feed_obj), feed_obj)
+#             raise
+#             return
+            self.logger.debug("Importing document %s..." % feed_obj.id)
+        else:
+            self.logger.debug("Importing entry %s..." % feed_obj.feed_url)
 
         fields = self.post_fields_parsed(entry, feed_obj)
 
@@ -338,8 +354,7 @@ class FeedImporter(object):
 
         # Check to see if domain has been blacklisted.
         if BlacklistedDomain.is_blacklisted(fields['link']):
-            self.logger.info("Ignoring blacklisted URL: %s" % (
-                fields['link']))
+            self.logger.info("Ignoring blacklisted URL: %s" % (fields['link']))
             return
 
         post = self.post_model.objects.update_or_create(feed_obj, **fields)
@@ -364,7 +379,9 @@ class FeedImporter(object):
         if self.include_categories:
             post.categories.add(*(self.get_categories(entry) or []))
 
-        self.logger.debug("ie: %s Post successfully imported..." % (
-            feed_obj.feed_url))
+        if is_document:
+            self.logger.debug("ie: %s Post successfully imported..." % feed_obj.id)
+        else:
+            self.logger.debug("ie: %s Post successfully imported..." % feed_obj.feed_url)
 
         return post

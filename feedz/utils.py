@@ -102,7 +102,7 @@ def get_default_logger():
     global _logger
 
     if _logger is None:
-        _logger = logging.getLogger("djangofeeds")
+        _logger = logging.getLogger("feedz")
         formatter = logging.Formatter('[%(levelname)s] %(message)s')
         channel = logging.StreamHandler(stream=sys.stdout)
         channel.setFormatter(formatter)

@@ -14,12 +14,12 @@ from UserDict import UserDict
 from contextlib import nested
 from django.contrib.auth import authenticate
 
-from djangofeeds.importers import FeedImporter
-from djangofeeds.exceptions import FeedCriticalError
-from djangofeeds.exceptions import TimeoutError, FeedNotFoundError
-from djangofeeds import models
-from djangofeeds.models import Feed, Post
-from djangofeeds import feedutil
+from feedz.importers import FeedImporter
+from feedz.exceptions import FeedCriticalError
+from feedz.exceptions import TimeoutError, FeedNotFoundError
+from feedz import models
+from feedz.models import Feed, Post
+from feedz import feedutil
 
 data_path = os.path.join(os.path.dirname(__file__), "data")
 
@@ -49,7 +49,7 @@ class TestRegressionOPAL578(unittest.TestCase):
         return feed_obj
 
     def test_does_not_duplicate_posts(self):
-        spool = tempfile.mktemp(suffix="ut", prefix="djangofeeds")
+        spool = tempfile.mktemp(suffix="ut", prefix="feedz")
 
         def test_file(filename):
             try:
@@ -158,10 +158,9 @@ src="http://www.labandepasdessinee.com/bpd/images/saison3/261
         first_post = posts[0]
         self.assertEqual(first_post.guid, "Lifehacker-5147831")
         fmt = '%Y-%m-%d %H:%M:%S %Z%z'
-        self.assertEqual(first_post.date_updated,
-                datetime(2009, 02, 06, 04, 30, 0, 0,
-                tzinfo=pytz.timezone('US/Pacific')).astimezone(
-                    pytz.utc))
+        expected_dt = datetime(2009, 02, 06, 04, 30+7, 0, 0, tzinfo=pytz.timezone('US/Pacific')).astimezone(pytz.utc)
+        print('expected_dt:', expected_dt)
+        self.assertEqual(first_post.date_updated, expected_dt)
 
         for post in posts:
             self.assertTrue(post.guid, "post has GUID")

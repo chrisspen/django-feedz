@@ -7,7 +7,7 @@ from django.db.models.query import QuerySet
 from django.core.exceptions import MultipleObjectsReturned
 from django.utils import timezone
 
-from djangofeeds.utils import truncate_field_data
+from feedz.utils import truncate_field_data
 
 """ .. data:: DEFAULT_POST_LIMIT
 
@@ -77,6 +77,9 @@ class ExtendedManager(models.Manager):
     """Manager supporting :meth:`update_or_create`."""
 
     def get_query_set(self):
+        return self.get_queryset() # Renamed in Django 1.6.
+        
+    def get_queryset(self):
         return ExtendedQuerySet(self.model)
 
     def update_or_create(self, **kwargs):
@@ -84,7 +87,7 @@ class ExtendedManager(models.Manager):
 
 
 class FeedManager(ExtendedManager):
-    """Manager for :class:`djangofeeds.models.Feed`."""
+    """Manager for :class:`feedz.models.Feed`."""
 
     def since(self, interval):
         return self.get_query_set().since(interval)

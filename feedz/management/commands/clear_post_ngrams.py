@@ -5,7 +5,7 @@ import warnings
 
 from django.core.management.base import BaseCommand
 
-from djangofeeds.models import Post
+from feedz.models import Post
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (

@@ -21,7 +21,7 @@ try:
 except ImportError:
     Entries = None
 else:
-    from djangofeeds.backends.pyredis import Entries
+    from feedz.backends.pyredis import Entries
 
 
 def skip_if_redis_not_running(fun):

@@ -3,12 +3,12 @@ from HTMLParser import HTMLParseError
 from django.conf import settings
 import re
 
-DJANGOFEEDS_REMOVE_TRACKERS = getattr(settings,
-    "DJANGOFEEDS_REMOVE_TRACKERS", True)
+FEEDZ_REMOVE_TRACKERS = getattr(settings,
+    "FEEDZ_REMOVE_TRACKERS", True)
 
 # The obvious tracker images
-DJANGOFEEDS_TRACKER_SERVICES = getattr(settings,
-    "DJANGOFEEDS_TRACKER_SERVICES", [
+FEEDZ_TRACKER_SERVICES = getattr(settings,
+    "FEEDZ_TRACKER_SERVICES", [
     'http://feedads',
     'http://feeds.feedburner.com/~r/',
     'http://feeds.feedburner.com/~ff/',
@@ -22,8 +22,8 @@ DJANGOFEEDS_TRACKER_SERVICES = getattr(settings,
     'http://telegraph.feedsportal.com/c/',
 ])
 
-DJANGOFEEDS_SMALL_IMAGE_LIMIT = getattr(settings,
-    "DJANGOFEEDS_SMALL_IMAGE_LIMIT", 50)
+FEEDZ_SMALL_IMAGE_LIMIT = getattr(settings,
+    "FEEDZ_SMALL_IMAGE_LIMIT", 50)
 
 
 class PostContentOptimizer(object):
@@ -68,7 +68,7 @@ class PostContentOptimizer(object):
 
     def looks_like_tracker(self, url):
         """Return True if the image URL has to be removed."""
-        for service in DJANGOFEEDS_TRACKER_SERVICES:
+        for service in FEEDZ_TRACKER_SERVICES:
             if url.startswith(service):
                 return True
         return False
@@ -81,7 +81,7 @@ class PostContentOptimizer(object):
         try:
             soup = BeautifulSoup.BeautifulSoup(html)
             self.remove_excessive_br(soup)
-            if DJANGOFEEDS_REMOVE_TRACKERS:
+            if FEEDZ_REMOVE_TRACKERS:
                 self.remove_trackers(soup)
         except HTMLParseError:
             return html
@@ -117,11 +117,11 @@ class PostContentOptimizer(object):
             # remove small images
             try:
                 image_width = int(image.get("width",
-                    DJANGOFEEDS_SMALL_IMAGE_LIMIT))
+                    FEEDZ_SMALL_IMAGE_LIMIT))
             except ValueError:
                 image_width = None
             if (image_width is not None and
-                image_width < DJANGOFEEDS_SMALL_IMAGE_LIMIT and
+                image_width < FEEDZ_SMALL_IMAGE_LIMIT and
                 not already_removed):
                 image.replaceWith("")
 

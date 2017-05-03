@@ -6,9 +6,9 @@ import feedparser
 from datetime import datetime
 import pytz
 
-from djangofeeds import feedutil
-from djangofeeds.feedutil import date_to_datetime, find_post_content
-from djangofeeds.tests.test_importers import get_data_file
+from feedz import feedutil
+from feedz.feedutil import date_to_datetime, find_post_content
+from feedz.tests.test_importers import get_data_file
 from django.utils.timezone import utc
 
 NOT_ENCODEABLE = ('\xd0\x9e\xd1\x82\xd0\xb2\xd0\xb5\xd1\x82\xd1\x8b '

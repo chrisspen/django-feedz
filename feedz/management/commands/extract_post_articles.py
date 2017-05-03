@@ -1,4 +1,4 @@
-from __future__ import with_statement
+from __future__ import with_statement, print_function
 
 import sys
 import urllib2
@@ -14,10 +14,13 @@ from django.core.management.base import BaseCommand
 from django.db.models import Q
 from django.utils import timezone
 
-from djangofeeds.models import Feed, Post
-from djangofeeds.importers import FeedImporter
+from feedz.models import Feed, Post
+from feedz.importers import FeedImporter
 
-from chroniker.models import Job
+try:
+    from chroniker.models import Job
+except ImportError:
+    Job = None
 
 class Command(BaseCommand):
     option_list = BaseCommand.option_list + (
@@ -75,7 +78,8 @@ class Command(BaseCommand):
             print '\rProcessing post %i (%i of %i, %i success, %i errors, %i mehs)...' \
                 % (post.id, i, total, success_count, error_count, meh_count),
             sys.stdout.flush()
-            Job.update_progress(total_parts=total, total_parts_complete=i)
+            if Job:
+                Job.update_progress(total_parts=total, total_parts_complete=i)
             try:
                 post.retrieve_article_content(force=options['force'])
                 success_count += bool(len((post.article_content or '').strip()))

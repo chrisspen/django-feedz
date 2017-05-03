@@ -4,8 +4,8 @@ from datetime import datetime
 from redish.utils import maybe_datetime
 from redish.models import Model, Manager
 
-from djangofeeds import conf
-from djangofeeds.managers import DEFAULT_POST_LIMIT
+from feedz import conf
+from feedz.managers import DEFAULT_POST_LIMIT
 
 
 class InconsistencyWarning(UserWarning):
@@ -47,7 +47,7 @@ class Entry(Model):
 
 
 class Entries(Manager):
-    db = "djangofeeds"
+    db = "feedz"
     model = Entry
 
     def all_by_order(self, feed_url, limit=DEFAULT_POST_LIMIT):

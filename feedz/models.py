@@ -1,4 +1,5 @@
 """Model working with Feeds and Posts."""
+from __future__ import print_function
 import sys
 import re
 import gc
@@ -6,36 +7,54 @@ import httplib as http
 from datetime import datetime, timedelta
 from django.utils.timezone import utc
 from collections import defaultdict
+import hashlib
 
 from django.conf import settings
 from django.db import models, reset_queries
 from django.db.models import signals
-from django.db.transaction import commit_on_success, commit
+from django.db import transaction
+from django.db.transaction import commit
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import force_text
 from django.utils import timezone
+
+try:
+    # >= Django 1.8
+    commit_on_success = transaction.atomic
+except AttributeError:
+    # < Django 1.8
+    commit_on_success = transaction.commit_on_success
 
 from picklefield.fields import PickledObjectField
 
 from nltk.util import ngrams as ngrams_iter
 
 from fake_useragent import UserAgent
+
+# try:
+#     from chroniker.models import Job
+# except ImportError:
+#     Job = None
+
+from feedz import conf
+from feedz.utils import naturaldate
+from feedz.managers import FeedManager, PostManager
+from feedz.managers import EnclosureManager, CategoryManager
+from feedz.backends import backend_or_default
+
 ua = UserAgent()
 
-import hashlib
-md5_constructor = hashlib.md5
+def parse_stripe(stripe):
+    stripe_num = None
+    stripe_mod = None
+    if stripe:
+        assert isinstance(stripe, basestring) and len(stripe) == 2
+        stripe_num,stripe_mod = stripe
+        stripe_num = int(stripe_num)
+        stripe_mod = int(stripe_mod)
+        assert stripe_num < stripe_mod
+    return stripe_num, stripe_mod
 
-try:
-    from admin_steroids.utils import StringWithTitle
-    APP_LABEL = StringWithTitle('djangofeeds', 'Feeds')
-except ImportError:
-    APP_LABEL = 'djangofeeds'
-
-from djangofeeds import conf
-from djangofeeds.utils import naturaldate
-from djangofeeds.managers import FeedManager, PostManager
-from djangofeeds.managers import EnclosureManager, CategoryManager
-from djangofeeds.backends import backend_or_default
 
 ACCEPTED_STATUSES = frozenset([http.OK,
                                http.FOUND,
@@ -91,7 +110,6 @@ class Category(models.Model):
     objects = CategoryManager()
 
     class Meta:
-        app_label = APP_LABEL
         unique_together = ("name", "domain")
         verbose_name = _(u"category")
         verbose_name_plural = _(u"categories")
@@ -181,7 +199,6 @@ class Feed(models.Model):
     objects = FeedManager()
 
     class Meta:
-        app_label = APP_LABEL
         ordering = ("id", )
         verbose_name = _(u"feed")
         verbose_name_plural = _(u"feeds")
@@ -312,17 +329,14 @@ class Enclosure(models.Model):
     objects = EnclosureManager()
 
     class Meta:
-        app_label = APP_LABEL
         verbose_name = _(u"enclosure")
         verbose_name_plural = _(u"enclosures")
 
     def __unicode__(self):
         return u"%s %s (%d)" % (self.url, self.type, self.length)
 
-from chroniker.models import Job
-from django_materialized_views.models import MaterializedView, parse_stripe
 
-class Post(models.Model, MaterializedView):
+class Post(models.Model):
     """A Post for an RSS feed
 
     .. attribute:: feed
@@ -430,7 +444,6 @@ class Post(models.Model, MaterializedView):
     objects = PostManager()
 
     class Meta:
-        app_label = APP_LABEL
         # sorting on anything else than id is catastrophic for
         # performance
         # even an ordering by id is not smart
@@ -440,7 +453,7 @@ class Post(models.Model, MaterializedView):
 
     def auto_guid(self):
         """Automatically generate a new guid from the metadata available."""
-        return md5_constructor("|".join((
+        return hashlib.md5("|".join((
                     self.title, self.link, self.author))).hexdigest()
 
     def __unicode__(self):
@@ -586,7 +599,7 @@ class Post(models.Model, MaterializedView):
         for self in q.iterator():
             i += 1
             if i == 1 or not i % 100 or i == total:
-                print '\rClearing ngrams %i of %i %.02f%%.' % (i, total, float(i)/total*100),
+                sys.stdout.write('\rClearing ngrams %i of %i %.02f%%.' % (i, total, float(i)/total*100))
                 sys.stdout.flush()
                 commit()
             self.article_ngram_counts = None
@@ -657,7 +670,6 @@ class BlacklistedDomain(models.Model):
         blank=True)
 
     class Meta:
-        app_label = APP_LABEL
         ordering = ('domain',)
 
     def __unicode__(self):
@@ -704,7 +716,6 @@ class Article(models.Model):
         #db_table = 'database_size_table'
         #db_table = 'database_size_databasesizetable'
         ordering = ('-year', '-month')
-        app_label = APP_LABEL
         verbose_name = _('article')
 
 class ArticleByDomain(models.Model):
@@ -735,5 +746,4 @@ class ArticleByDomain(models.Model):
     class Meta:
         managed = False
         ordering = ('-year', '-month', '-missing_without_error', '-missing_ratio')
-        app_label = APP_LABEL
         verbose_name = _('article by domain')

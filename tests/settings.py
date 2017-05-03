@@ -20,14 +20,14 @@ ADMINS = (
 
 #TEST_RUNNER = "django_nose.NoseTestSuiteRunner"
 
-COVERAGE_EXCLUDE_MODULES = ("djangofeeds",
-                            "djangofeeds.admin",
-                            "djangofeeds.maintenance",
-                            "djangofeeds.management*",
-                            "djangofeeds.tests*",
-                            "djangofeeds.models",
-                            "djangofeeds.managers",
-                            "djangofeeds.utils",
+COVERAGE_EXCLUDE_MODULES = ("feedz",
+                            "feedz.admin",
+                            "feedz.maintenance",
+                            "feedz.management*",
+                            "feedz.tests*",
+                            "feedz.models",
+                            "feedz.managers",
+                            "feedz.utils",
 )
 
 here = os.path.abspath(os.path.dirname(__file__))
@@ -65,7 +65,7 @@ INSTALLED_APPS = (
     'django.contrib.sites',
     'django_nose',
     #'djcelery',
-    'djangofeeds',
+    'feedz',
     'pytz',
 )
 

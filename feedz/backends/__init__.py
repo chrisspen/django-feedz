@@ -1,9 +1,9 @@
-from djangofeeds import conf
+from feedz import conf
 import importlib
 
 BACKEND_ALIASES = {
-    "database": "djangofeeds.backends.database.DatabaseBackend",
-    "redis": "djangofeeds.backends.pyredis.RedisBackend",
+    "database": "feedz.backends.database.DatabaseBackend",
+    "redis": "feedz.backends.pyredis.RedisBackend",
 }
 
 _backend_cache = {}

@@ -2,18 +2,15 @@ from datetime import date, timedelta
 
 from django.db.models import Q
 from django.contrib import admin
-from django.contrib.admin import FieldListFilter, ListFilter, SimpleListFilter
-from django.utils.translation import (
-    ungettext,
-    ugettext_lazy as _
-)
+from django.contrib.admin import SimpleListFilter
+from django.utils.translation import ugettext_lazy as _
 from django.http import HttpResponse, HttpResponseRedirect
 
-from djangofeeds import conf
-from djangofeeds.models import (
+from feedz import conf
+from feedz.models import (
     Feed, Post, Enclosure, Category,
     BlacklistedDomain,
-    Article, NGram, PostNGram,
+    Article,
     ArticleByDomain,
 )
 
@@ -37,10 +34,7 @@ class FreshStaleListFilter(SimpleListFilter):
         try:
             self.parameter_val = request.GET.get(self.parameter_name, self.default_value)
             if self.parameter_val is not None:
-                if self.parameter_val in (True, 'True', 1, '1'):
-                    self.parameter_val = True
-                else:
-                    self.parameter_val = False
+                self.parameter_val = bool(self.parameter_val in (True, 'True', 1, '1'))
         except Exception, e:
             pass
         super(FreshStaleListFilter, self).__init__(request, params, model, model_admin)
@@ -78,7 +72,7 @@ class FreshStaleListFilter(SimpleListFilter):
         return queryset
 
 class FeedAdmin(BaseModelAdmin):
-    """Admin for :class:`djangofeeds.models.Feed`."""
+    """Admin for :class:`feedz.models.Feed`."""
 
     list_display = (
         'name',
@@ -118,7 +112,7 @@ class FeedAdmin(BaseModelAdmin):
     post_link.allow_tags = True
 
 class PostAdmin(BaseModelAdmin):
-    """Admin for :class:`djangofeeds.models.Post`."""
+    """Admin for :class:`feedz.models.Post`."""
     list_display = (
         'id',
         'feed',

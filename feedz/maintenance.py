@@ -1,6 +1,6 @@
 from django.db import transaction
 
-from djangofeeds.models import Feed
+from feedz.models import Feed
 
 
 @transaction.commit_manually

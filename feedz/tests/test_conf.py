@@ -1,7 +1,7 @@
 import unittest2 as unittest
 from datetime import timedelta
 
-from djangofeeds import conf
+from feedz import conf
 
 
 class TestConf(unittest.TestCase):
