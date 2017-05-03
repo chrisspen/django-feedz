@@ -78,7 +78,7 @@ class Command(NoArgsCommand):
     can_import_settings = True
 
     def handle_noargs(self, **options):
-        
+
         # Initialize parameters.
         force = options.get('force')
         dryrun = options['dryrun']
@@ -87,7 +87,7 @@ class Command(NoArgsCommand):
         feed_ids = [int(_.strip()) for _ in (options['feeds'] or '').split(',') if _.strip().isdigit()]
         name_contains = options['name_contains']
         max_feeds = int(options['max_feeds'])
-        
+
         # Retrieve feeds.
         importer = FeedImporter()
         q = get_feeds(
@@ -103,23 +103,22 @@ class Command(NoArgsCommand):
         print '%i feeds found' % total
         if dryrun:
             return
-        
+
         if processes == 1:
-        
+
             for feed_id in q.iterator():
                 refresh_feed_helper(feed_id=feed_id, cleanup=False)
-        
+
         else:
-            
+
             # Initialize tasks.
             tasks = [
                 delayed(refresh_feed_helper)(feed_id=feed_id)
                 for feed_id in q.iterator()
             ]
-            
+
             #TODO:launch thread to update Job progress?
-            
+
             # Run all tasks.
             connection.close()
             Parallel(n_jobs=processes, verbose=50)(tasks)
-            

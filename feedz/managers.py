@@ -97,7 +97,7 @@ class FeedManager(ExtendedManager):
 
     def get_by_natural_key(self, feed_url):
         return self.get(feed_url=feed_url)
-    
+
     def get_stale(self, days=1, qs=None):
         if qs is None:
             qs = self
@@ -105,7 +105,7 @@ class FeedManager(ExtendedManager):
             Q(date_last_refresh__isnull=True)|\
             Q(  date_last_refresh__isnull=False,
                 date_last_refresh__lte=timezone.now()-timedelta(days=days)))
-    
+
     def get_fresh(self, days=1, qs=None):
         if qs is None:
             qs = self
@@ -132,7 +132,7 @@ class PostManager(ExtendedManager):
         return self.filter(
             article_content_success=True,
             article_content_length__gt=0)
-        
+
     def update_or_create(self, feed_obj, **fields):
         """Update post with new values."""
         super_update = super(PostManager, self).update_or_create

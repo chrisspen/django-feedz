@@ -25,4 +25,3 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         post_ids = map(int, [_ for _ in options['posts'].strip().split(',') if _.strip().isdigit()])
         Post.clear_ngrams(post_ids=post_ids, force=options['force'])
-        

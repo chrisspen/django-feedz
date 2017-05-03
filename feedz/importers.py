@@ -228,17 +228,17 @@ class FeedImporter(object):
             recently refreshed already.
 
         """
-        
+
         now = datetime.utcnow().replace(tzinfo=utc)
         already_fresh = (feed_obj.date_last_refresh and
                          now < feed_obj.date_last_refresh +
                          conf.MIN_REFRESH_INTERVAL)
-        
+
         if already_fresh and not force:
             self.logger.info(
                     "Feed %s is fresh. Skipping refresh." % feed_obj.feed_url)
             return feed_obj
-        
+
         limit = self.post_limit
         if not feed:
             last_modified = None
@@ -254,20 +254,20 @@ class FeedImporter(object):
                 return feed_obj.save_timeout_error()
             except Exception:
                 return feed_obj.save_generic_error()
-        
+
         # Feed can be local/ not fetched with HTTP client.
         status = feed.get("status", http.OK)
         if status == http.NOT_MODIFIED and not force:
             return feed_obj
-        
+
         if feed_obj.is_error_status(status):
             return feed_obj.set_error_status(status)
-        
+
         if feed.entries:
             sorted_by_date = feedutil.entries_by_date(feed.entries, limit)
             for entry in sorted_by_date:
                 self.import_entry(entry, feed_obj)
-        
+
         feed_obj.date_last_refresh = now
         feed_obj.http_etag = feed.get("etag", "")
         if hasattr(feed, "modified") and feed.modified:
@@ -308,7 +308,7 @@ class FeedImporter(object):
         self.logger.debug("Importing entry %s..." % feed_obj.feed_url)
 
         fields = self.post_fields_parsed(entry, feed_obj)
-        
+
         # Extract link from summary instead of link field if pattern specified.
         if feed_obj.summary_detail_link_regex:
             if 'summary_detail' in entry:
@@ -329,19 +329,19 @@ class FeedImporter(object):
                 self.logger.debug('Summary detail links v2: '+str(link_matches))
                 if link_matches:
                     fields['link'] = link_matches[0].strip()
-        
+
         if conf.LINK_URL_REGEXES:
             for pattern in conf.LINK_URL_REGEXES:
                 _matches = pattern.findall(fields['link'])
                 if _matches:
                     fields['link'] = _matches[0]
-        
+
         # Check to see if domain has been blacklisted.
         if BlacklistedDomain.is_blacklisted(fields['link']):
             self.logger.info("Ignoring blacklisted URL: %s" % (
                 fields['link']))
             return
-        
+
         post = self.post_model.objects.update_or_create(feed_obj, **fields)
         if not post:
             self.logger.debug("Unable to update or create post from entry: %s" % (

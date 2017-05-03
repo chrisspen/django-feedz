@@ -25,13 +25,13 @@ BaseModelAdmin = admin.ModelAdmin
 BaseModelAdmin = BetterRawIdFieldsModelAdmin
 
 class FreshStaleListFilter(SimpleListFilter):
-    
+
     title = 'Freshness'
-    
+
     parameter_name = 'freshness'
-    
+
     default_value = None
-    
+
     def __init__(self, request, params, model, model_admin):
         self.parameter_val = None
         try:
@@ -79,7 +79,7 @@ class FreshStaleListFilter(SimpleListFilter):
 
 class FeedAdmin(BaseModelAdmin):
     """Admin for :class:`djangofeeds.models.Feed`."""
-    
+
     list_display = (
         'name',
         'feed_url',
@@ -94,7 +94,7 @@ class FeedAdmin(BaseModelAdmin):
         FreshStaleListFilter,
     )
     search_fields = ['feed_url', 'name']
-    
+
     readonly_fields = (
         'post_link',
         'fresh',
@@ -104,7 +104,7 @@ class FeedAdmin(BaseModelAdmin):
         if conf.ALLOW_ADMIN_FEED_LOOKUPS:
             return True
         return super(FeedAdmin, self).lookup_allowed(*args, **kwargs)
-    
+
     def post_link(self, obj=''):
         try:
             if not obj or not obj.id or not get_admin_changelist_url:
@@ -143,7 +143,7 @@ class PostAdmin(BaseModelAdmin):
     ]
     search_fields = ['link', 'title']
     date_hierarchy = 'date_updated'
-    
+
     readonly_fields = (
         'has_article',
         #'ngrams_link',
@@ -151,28 +151,28 @@ class PostAdmin(BaseModelAdmin):
         'article_ngram_counts',
         'article_ngrams_extracted_datetime',
     )
-    
+
     actions = (
         'reset_article_success',
     )
-    
+
     def ngrams_link(self, obj=None):
         if not obj:
             return ''
         return view_related_link(obj, 'ngrams')
     ngrams_link.short_description = 'ngrams'
     ngrams_link.allow_tags = True
-    
+
     def reset_article_success(self, request, queryset):
         queryset.update(article_content_success=None)
         return HttpResponseRedirect(request.META['HTTP_REFERER'])
     reset_article_success.short_description = 'Reset article content success flag on selected %(verbose_name_plural)s'
-    
+
     def lookup_allowed(self, *args, **kwargs):
         if conf.ALLOW_ADMIN_FEED_LOOKUPS:
             return True
         return super(PostAdmin, self).lookup_allowed(*args, **kwargs)
-    
+
     def has_article(self, obj=None):
         if not obj:
             return ''
@@ -180,22 +180,22 @@ class PostAdmin(BaseModelAdmin):
     has_article.boolean = True
 
 class BlacklistedDomainAdmin(BaseModelAdmin):
-    
+
     list_display = (
         'domain',
         'created',
     )
-    
+
     search_fields = (
         'domain',
     )
-    
+
     readonly_fields = (
         'created',
     )
 
 class ArticleAdmin(ReadonlyModelAdmin):
-    
+
     list_display = (
         'id',
         'year',
@@ -207,7 +207,7 @@ class ArticleAdmin(ReadonlyModelAdmin):
     )
 
 class ArticleByDomainAdmin(ReadonlyModelAdmin):
-    
+
     list_display = (
         'year',
         'month',
@@ -218,7 +218,7 @@ class ArticleByDomainAdmin(ReadonlyModelAdmin):
         'missing_ratio',
         'missing_without_error_ratio',
     )
-    
+
     def get_queryset(self, request):
         qs = super(ArticleByDomainAdmin, self).get_queryset(request)
         today = date.today()
@@ -227,59 +227,59 @@ class ArticleByDomainAdmin(ReadonlyModelAdmin):
             Q(year=today.year, month=today.month)|\
             Q(year=last_month.year, month=last_month.month))
         return qs
-    
+
 class NGramAdmin(BaseModelAdmin):
-    
+
     list_display = (
         'text',
         'n',
     )
-    
+
     list_filter = (
         'n',
     )
-    
+
     search_fields = (
         'text',
     )
-    
+
     readonly_fields = (
         'text',
         'n',
     )
 
 class PostNGramAdmin(BaseModelAdmin):
-    
+
     list_display = (
         'post',
         'ngram',
         'count',
     )
-    
+
     search_fields = (
         'ngram__text',
     )
-    
+
     readonly_fields = (
         'post',
         'post_link',
         'ngram',
         'count',
     )
-    
+
     fields = (
         'post_link',
         'ngram',
         'count',
     )
-    
+
     def post_link(self, obj=None):
         if not obj:
             return ''
         return view_link(obj.post)
     post_link.short_description = 'post'
     post_link.allow_tags = True
-    
+
 if NullListFilter:
     PostAdmin.list_filter.append(('article_content', NullListFilter))
 

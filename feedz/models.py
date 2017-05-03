@@ -157,13 +157,13 @@ class Feed(models.Model):
     sort = models.SmallIntegerField(_(u"sort order"), default=0)
     date_created = models.DateTimeField(_(u"date created"), auto_now_add=True, default=timezone.now)
     date_changed = models.DateTimeField(_(u"date changed"), auto_now=True, default=timezone.now)
-    
+
     # this date is used to know if the feed is still used by some
     # real users. Update the value when the user use the feed.
     date_last_requested = models.DateTimeField(
         _(u"last requested"),
         auto_now_add=True)
-    
+
     summary_detail_link_regex = models.CharField(
         max_length=1000,
         blank=True,
@@ -171,9 +171,9 @@ class Feed(models.Model):
         help_text=_('''A regular expression to extra the link from the
             entry\'s summary detail section. This is useful when the entry\'s
             main link is a wrapper but the summary contains the true URL.'''))
-    
+
     is_active = models.BooleanField(_(u"is active"), default=True)
-    
+
     freq = models.IntegerField(
         _(u"frequency"),
         default=conf.REFRESH_EVERY)
@@ -371,53 +371,53 @@ class Post(models.Model, MaterializedView):
         _(u"content"),
         blank=True,
         null=True)
-    
+
     article_content = models.TextField(
         _(u"article content"),
         blank=True,
         null=True,
         help_text=_('''The full article content retrieved from the URL.'''))
-    
+
     article_content_length = models.PositiveIntegerField(
         blank=True,
         null=True,
         editable=False,
         db_index=True)
-    
+
     article_content_error_code = models.CharField(
         max_length=25,
         blank=True,
         null=True,
         db_index=True,
         help_text=_('Any HTTP error code received while attempting to download the article.'))
-    
+
     article_content_error_reason = models.CharField(
         max_length=200,
         blank=True,
         null=True,
         help_text=_('Any HTTP error reason received while attempting to download the article.'))
-    
+
     article_content_success = models.NullBooleanField(default=None, db_index=True)
-    
+
     article_content_error = models.TextField(blank=True, null=True)
-    
+
     article_ngrams_extracted = models.BooleanField(
         default=False,
         editable=False,
         db_index=True)
-    
+
     article_ngrams_extracted_datetime = models.DateTimeField(
         blank=True,
         null=True,
         editable=False,
         db_index=True)
-    
+
     article_ngram_counts = PickledObjectField(
         blank=True,
         null=True,
         compress=True,
         help_text=_('{ngram:count}'))
-    
+
     guid = models.CharField(_(u"guid"), max_length=200, blank=True)
     author = models.CharField(_(u"author"), max_length=50, blank=True)
     date_published = models.DateField(
@@ -447,25 +447,25 @@ class Post(models.Model, MaterializedView):
         return u"%s" % self.title
 
     def save(self, *args, **kwargs):
-        
+
         old = None
         if self.id:
             old = type(self).objects.get(id=self.id)
-        
+
         self.article_content = (self.article_content or '').strip()
         if self.article_content:
             self.article_content = force_text(self.article_content, errors='replace')
         else:
             self.article_content = None
         self.article_content_length = len((self.article_content or '').strip())
-        
+
         if old and old.article_content != self.article_content:
             self.article_ngrams_extracted = False
-        
+
 #        self.article_content_success = bool((self.article_content or '').strip())
 #        if self.article_content_success:
 #            self.article_content_error = None
-            
+
         super(Post, self).save(*args, **kwargs)
 
     @property
@@ -477,7 +477,7 @@ class Post(models.Model, MaterializedView):
     @property
     def date_updated_naturaldate(self):
         return unicode(naturaldate(self.date_updated))
-    
+
     def retrieve_article_content(self, force=False):
         import webarticle2text
         if self.article_content and not force:
@@ -492,13 +492,13 @@ class Post(models.Model, MaterializedView):
         self.article_content_success = bool((self.article_content or '').strip())
         self.article_content_error = None
         self.save()
-    
+
     @classmethod
     def needs_update(cls, *args, **kwargs):
         return bool(Post.objects.all_ngramless().only('id').exists())
-    
+
     stripable = True
-    
+
     @classmethod
     def do_update(cls, stripe=None, print_status=None, post_ids=None, force=False, *args, **kwargs):
         tmp_debug = settings.DEBUG
@@ -530,11 +530,11 @@ class Post(models.Model, MaterializedView):
                 gc.collect()
         finally:
             settings.DEBUG = tmp_debug
-    
+
     @property
     def ngramable_text(self):
         return (self.content or '') + ' ' + (self.article_content or '')
-        
+
     @property
     def ngramable_tokens(self):
         content = self.ngramable_text
@@ -543,14 +543,14 @@ class Post(models.Model, MaterializedView):
         text = re.sub(r'[\s\t\n\r]+', ' ', text, flags=re.DOTALL)
         text = text.strip().split(' ')
         return text
-    
+
     def get_ngrams(self, min_n=1, max_n=3, min_text_length=4):
         """
         Returns a dictionary of the form {ngram:occurrence_count}.
         """
-        
+
         text = self.ngramable_tokens
-        
+
         ngrams = []
         for n in xrange(min_n, max_n+1):
             ngrams.extend(ngrams_iter(sequence=text, n=n))
@@ -562,14 +562,14 @@ class Post(models.Model, MaterializedView):
             ngram_counts.setdefault(ngram, 0)
             ngram_counts[ngram] += 1
         return ngram_counts
-    
+
     @commit_on_success
     def extract_ngrams(self, force=False):
         if not force and (self.article_ngrams_extracted or not self.article_content_length):
             return
-        
+
         ngram_counts = self.get_ngrams()
-        
+
         self.article_ngram_counts = ngram_counts
         self.article_ngrams_extracted = True
         self.article_ngrams_extracted_datetime = datetime.now()
@@ -595,7 +595,7 @@ class Post(models.Model, MaterializedView):
             self.save()
 
 class NGram(models.Model):
-    
+
     text = models.CharField(
         max_length=1000,
         blank=False,
@@ -603,66 +603,66 @@ class NGram(models.Model):
         unique=True,
         editable=False,
         db_index=True)
-    
+
     n = models.PositiveIntegerField(
         blank=False,
         null=False,
         editable=False,
         db_index=True)
-    
+
     def __unicode__(self):
         return self.text
-    
+
     def save(self, *args, **kwargs):
-        
+
         self.text = (self.text or '').strip().lower()
-        
+
         self.n = self.text.count(' ') + 1
-        
+
         super(NGram, self).save(*args, **kwargs)
 
 class PostNGram(models.Model):
     """
     Links an n-gram to a specific post.
     """
-    
+
     post = models.ForeignKey('Post', related_name='ngrams', editable=False)
-    
+
     ngram = models.ForeignKey('NGram', related_name='posts', editable=False)
-    
+
     count = models.PositiveIntegerField(
         blank=False,
         null=False,
         editable=False,
         db_index=True)
-    
+
     class Meta:
         unique_together = (
             ('post', 'ngram'),
         )
 
 class BlacklistedDomain(models.Model):
-    
+
     domain = models.CharField(
         max_length=150,
         blank=False,
         null=False,
         db_index=True,
         help_text=_('All URLs with this domain will be ignored and not imported.'))
-    
+
     created = models.DateTimeField(
         auto_now_add=True,
         null=True,
         editable=False,
         blank=True)
-    
+
     class Meta:
         app_label = APP_LABEL
         ordering = ('domain',)
-    
+
     def __unicode__(self):
         return self.domain
-    
+
     @classmethod
     def is_blacklisted(cls, url):
         """
@@ -683,22 +683,22 @@ class BlacklistedDomain(models.Model):
         return False
 
 class Article(models.Model):
-    
+
     # MySQL can have no more than 255 length...
     id = models.CharField(max_length=255, primary_key=True)
-    
+
     year = models.PositiveIntegerField(editable=False)
-    
+
     month = models.PositiveIntegerField(editable=False)
-    
+
     total = models.PositiveIntegerField(editable=False)
-    
+
     has_article = models.PositiveIntegerField(editable=False)
-    
+
     mean_length = models.PositiveIntegerField(editable=False)
-    
+
     ratio_extracted = models.FloatField(editable=False)
-    
+
     class Meta:
         managed = False
         #db_table = 'database_size_table'
@@ -708,33 +708,32 @@ class Article(models.Model):
         verbose_name = _('article')
 
 class ArticleByDomain(models.Model):
-    
+
     # MySQL can have no more than 255 length...
     id = models.CharField(max_length=255, primary_key=True)
-    
+
     year = models.PositiveIntegerField(editable=False)
-    
+
     month = models.PositiveIntegerField(editable=False)
-    
+
     domain = models.CharField(max_length=255)
-    
+
     total = models.PositiveIntegerField(editable=False)
-    
+
     missing = models.PositiveIntegerField(editable=False)
-    
+
     missing_without_error = models.PositiveIntegerField(editable=False)
-    
+
     missing_without_error_or_success = models.PositiveIntegerField(editable=False)
-    
+
     missing_ratio = models.FloatField(editable=False)
-    
+
     missing_without_error_ratio = models.FloatField(editable=False)
-    
+
     missing_without_error_or_success_ratio = models.FloatField(editable=False)
-    
+
     class Meta:
         managed = False
         ordering = ('-year', '-month', '-missing_without_error', '-missing_ratio')
         app_label = APP_LABEL
         verbose_name = _('article by domain')
-        

@@ -25,9 +25,9 @@ class Command(BaseCommand):
 #                    help="Specific feeds to refresh."),
         make_option('--force', action='store_true', default=False,
                     help="Specific feeds to refresh."),
-        make_option('--year', 
+        make_option('--year',
                     help="A specific year to process."),
-        make_option('--month', 
+        make_option('--month',
                     help="A specific month to process."),
 #        make_option(
 #            '--without-error',
@@ -46,13 +46,13 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dryrun = options['dryrun']
         q = Post.objects.all_articleless()
-        
+
         # Keep retrying until we get a legitimate error code
         # explaining the failure.
         q = q.filter(article_content_error_code__isnull=True)
-        
+
         #q = q.filter(article_content_success__isnull=True)
-        
+
         #TODO:retry article_content_success=False but with error_code__isnull=False?
         year = options['year']
         month = options['month']
@@ -102,4 +102,3 @@ class Command(BaseCommand):
         print '-'*80
         print '%i successes' % success_count
         print '%i errors' % error_count
-        
