@@ -6,7 +6,7 @@ django-celery==3.2.1
 beautifulsoup4>=4.5.3
 httplib2==0.10.3
 html5lib==0.999999999
-pytz
+pytz==2017.2
 fake-useragent
 nltk>=2.0.4
 django-picklefield>=0.3.1
