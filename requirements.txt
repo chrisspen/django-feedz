@@ -4,7 +4,7 @@ celery==4.0.2
 django-celery==3.2.1
 #BeautifulSoup>=3.2.1
 beautifulsoup4>=4.5.3
-httplib2
+httplib2==0.10.3
 html5lib
 pytz
 fake-useragent
