@@ -1,4 +1,4 @@
-feedparser
+feedparser==5.2.1
 chardet
 celery
 django-celery
