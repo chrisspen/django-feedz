@@ -1,5 +1,5 @@
 tox>=2.0.0
-pylint==1.6.5
+pylint==1.7.1
 unittest2
 nose
 nose-cover3
