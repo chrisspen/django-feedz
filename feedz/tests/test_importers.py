@@ -18,7 +18,7 @@ from six.moves import UserDict
 
 from feedz.importers import FeedImporter
 from feedz.exceptions import FeedCriticalError
-from feedz.exceptions import TimeoutError, FeedNotFoundError
+from feedz.exceptions import TimeoutError, FeedNotFoundError # pylint: disable=redefined-builtin
 from feedz import models
 from feedz.models import Feed
 from feedz import feedutil

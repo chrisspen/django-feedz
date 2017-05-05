@@ -1,7 +1,7 @@
 from six.moves import http_client as http
 
 
-class TimeoutError(Exception):
+class TimeoutError(Exception): # pylint: disable=redefined-builtin
     """The operation timed-out."""
 
 

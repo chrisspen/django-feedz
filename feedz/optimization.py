@@ -131,8 +131,7 @@ class PostContentOptimizer(object):
 
             # remove images that looks like tracker
             image_source = image.get("src", "")
-            if (len(image_source) == 0 or
-                self.looks_like_tracker(image_source)):
+            if len(image_source) == 0 or self.looks_like_tracker(image_source):
                 image.replaceWith("")
                 already_removed = True
 
