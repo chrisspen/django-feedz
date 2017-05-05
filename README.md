@@ -1,7 +1,7 @@
 Django-Feedz
 ============
 
-A Django model for analyzing RSS/Atom feeds.
+A Django model for storing and analyzing RSS/Atom feeds.
 
 Development
 -----------

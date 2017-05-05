@@ -12,7 +12,7 @@ TEMPLATE_DEBUG = DEBUG
 SECRET_KEY = "mysecretkeytest"
 USE_TZ = True
 
-ROOT_URLCONF = "urls"
+ROOT_URLCONF = "tests.urls"
 
 ADMINS = (
     # ('Your Name', 'your_email@domain.com'),

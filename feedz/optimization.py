@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 from bs4.element import Tag
 #from HTMLParser import HTMLParseError
 
-from six.moves.html_parser import HTMLParseError
+#from six.moves.html_parser import HTMLParseError
 
 from django.conf import settings
 
@@ -87,13 +87,13 @@ class PostContentOptimizer(object):
             return html
         tagged = html.startswith('<') and html.endswith('>')
 
-        try:
-            soup = BeautifulSoup(html, 'lxml')#'html5lib')
-            self.remove_excessive_br(soup)
-            if FEEDZ_REMOVE_TRACKERS:
-                self.remove_trackers(soup)
-        except HTMLParseError:
-            return html
+#         try:
+        soup = BeautifulSoup(html, 'lxml')#'html5lib')
+        self.remove_excessive_br(soup)
+        if FEEDZ_REMOVE_TRACKERS:
+            self.remove_trackers(soup)
+#         except HTMLParseError:# Removed in Python 3.5
+#             return html
 
         if only_visible:
             html = str(soup.findAll('body')[0]).strip()

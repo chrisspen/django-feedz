@@ -176,8 +176,8 @@ class Feed(models.Model):
                                  max_length=32, choices=FEED_ERROR_CHOICES)
     ratio = models.FloatField(default=0.0)
     sort = models.SmallIntegerField(_(u"sort order"), default=0)
-    date_created = models.DateTimeField(_(u"date created"), auto_now_add=True, default=timezone.now)
-    date_changed = models.DateTimeField(_(u"date changed"), auto_now=True, default=timezone.now)
+    date_created = models.DateTimeField(_(u"date created"), auto_now_add=True)
+    date_changed = models.DateTimeField(_(u"date changed"), auto_now=True)
 
     # this date is used to know if the feed is still used by some
     # real users. Update the value when the user use the feed.
