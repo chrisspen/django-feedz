@@ -1,6 +1,7 @@
+from datetime import datetime, timedelta
+
 import pytz
 import unittest2 as unittest
-from datetime import datetime, timedelta
 
 from feedz.utils import naturaldate
 from feedz.feedutil import (entries_by_date,

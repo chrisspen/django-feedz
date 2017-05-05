@@ -2,21 +2,14 @@ from __future__ import with_statement, print_function
 
 import sys
 from optparse import make_option
-from datetime import datetime, timedelta
 import traceback
 from StringIO import StringIO
-
-import warnings
-#warnings.simplefilter('error', DeprecationWarning)
 
 from six.moves.urllib.error import HTTPError
 
 from django.core.management.base import BaseCommand
-from django.db.models import Q
-from django.utils import timezone
 
-from feedz.models import Feed, Post
-from feedz.importers import FeedImporter
+from feedz.models import Post
 
 try:
     from chroniker.models import Job

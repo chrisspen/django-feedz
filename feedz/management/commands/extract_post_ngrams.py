@@ -1,8 +1,5 @@
 from optparse import make_option
 
-import warnings
-#warnings.simplefilter('error', DeprecationWarning)
-
 from django.core.management.base import BaseCommand
 
 from feedz.models import Post

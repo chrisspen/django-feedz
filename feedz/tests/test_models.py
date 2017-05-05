@@ -1,9 +1,10 @@
 from __future__ import print_function
 
-import unittest2 as unittest
-import pytz
 from datetime import datetime
 from uuid import uuid4
+
+import unittest2 as unittest
+import pytz
 
 from six.moves import http_client as http
 from six import text_type
@@ -118,10 +119,8 @@ class TestFeed(unittest.TestCase):
 
     def test_objects_ratio(self):
         models.Feed.objects.all().delete()
-        [models.Feed.objects.create(name=gen_unique_id(),
-                                    feed_url=gen_unique_id(),
-                                    sort=0, ratio=i)
-                    for i in (0, 0.23, 0.24, 0.25, 1.12, 2.43)]
+        for i in (0, 0.23, 0.24, 0.25, 1.12, 2.43):
+            models.Feed.objects.create(name=gen_unique_id(), feed_url=gen_unique_id(), sort=0, ratio=i)
         self.assertEqual(models.Feed.objects.ratio(min=0).count(), 5)
         self.assertEqual(
                 models.Feed.objects.ratio(min=0.23, max=0.25).count(), 1)
@@ -136,11 +135,8 @@ class TestFeed(unittest.TestCase):
         now = datetime.now(pytz.utc)
         f = models.Feed.objects.create(name="foozalaz",
                 feed_url=gen_unique_id(), sort=0)
-        [models.Post.objects.create(feed=f,
-                                    title=gen_unique_id(),
-                                    date_published=now,
-                                    date_updated=now)
-                    for i in range(10)]
+        for i in range(10):
+            models.Post.objects.create(feed=f, title=gen_unique_id(), date_published=now, date_updated=now)
         self.assertEqual(f.expire_old_posts(min_posts=5, max_posts=5), 5)
         self.assertEqual(models.Post.objects.filter(feed=f).count(), 5)
         self.assertEqual(f.expire_old_posts(min_posts=3, max_posts=3), 2)

@@ -1,23 +1,20 @@
 from __future__ import with_statement, print_function
 
 import sys
-import time
 from optparse import make_option
-from datetime import datetime, timedelta
-from multiprocessing import Process, Lock, cpu_count
+from multiprocessing import cpu_count
 
 import warnings
-warnings.simplefilter('error', DeprecationWarning)
 
 from django.core.management.base import NoArgsCommand
-from django.db.models import Q
-from django.db import connection, transaction
-from django.utils import timezone
+from django.db import connection
 
 from joblib import Parallel, delayed
 
 from feedz.models import Feed
 from feedz.importers import FeedImporter
+
+warnings.simplefilter('error', DeprecationWarning)
 
 # try:
 #     from chroniker.models import Job

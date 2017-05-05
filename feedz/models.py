@@ -4,14 +4,13 @@ import sys
 import re
 import gc
 from datetime import datetime, timedelta
-from django.utils.timezone import utc
-from collections import defaultdict
 import hashlib
 
 from six import string_types, text_type
 from six.moves import http_client as http
 from six.moves.urllib.parse import urlparse
 
+from django.utils.timezone import utc
 from django.conf import settings
 from django.db import models, reset_queries
 from django.db.models import signals
@@ -19,14 +18,6 @@ from django.db import transaction
 from django.db.transaction import commit
 from django.utils.translation import ugettext_lazy as _
 from django.utils.encoding import force_text
-from django.utils import timezone
-
-try:
-    # >= Django 1.8
-    commit_on_success = transaction.atomic
-except AttributeError:
-    # < Django 1.8
-    commit_on_success = transaction.commit_on_success
 
 from picklefield.fields import PickledObjectField
 
@@ -45,6 +36,13 @@ from feedz.managers import FeedManager, PostManager
 from feedz.managers import EnclosureManager, CategoryManager
 from feedz.backends import backend_or_default
 
+try:
+    # >= Django 1.8
+    commit_on_success = transaction.atomic
+except AttributeError:
+    # < Django 1.8
+    commit_on_success = transaction.commit_on_success
+
 ua = UserAgent()
 
 def parse_stripe(stripe):
@@ -52,7 +50,7 @@ def parse_stripe(stripe):
     stripe_mod = None
     if stripe:
         assert isinstance(stripe, string_types) and len(stripe) == 2
-        stripe_num,stripe_mod = stripe
+        stripe_num, stripe_mod = stripe
         stripe_num = int(stripe_num)
         stripe_mod = int(stripe_mod)
         assert stripe_num < stripe_mod
@@ -234,19 +232,19 @@ class Feed(models.Model):
                     for i, post in enumerate(posts)
                         if i]
 
-    def average_frequency(self, limit=None, min=5,
-            default=timedelta(hours=2)):
+    def average_frequency(self, limit=None, min=5, default=timedelta(hours=2)): # pylint: disable=redefined-builtin
         freqs = self.frequencies(limit=limit)
         if len(freqs) < min:
             return default
         average = sum(map(timedelta_seconds, freqs)) / len(freqs)
         return timedelta(seconds=average)
 
-    def update_frequency(self, limit=None, min=5, save=True):
+    def update_frequency(self, limit=None, min=5, save=True): # pylint: disable=redefined-builtin
         self.freq = timedelta_seconds(self.average_frequency(limit, min))
-        save and self.save()
+        if save:
+            self.save()
 
-    def expire_old_posts(self, min_posts=30, max_posts=120, commit=False):
+    def expire_old_posts(self, min_posts=30, max_posts=120):
         """Expire old posts.
 
         :keyword min_posts: Minimum number of post by feed.
@@ -497,9 +495,9 @@ class Post(models.Model):
 
     def retrieve_article_content(self, force=False):
         assert settings.FEEDZ_ARTICLE_EXTRACTOR, 'No extractor specified.'
-        
+
         extractor = get_article_extractor_func()
-        
+
         if self.article_content and not force:
             return
         self.article_content = extractor(
@@ -598,7 +596,7 @@ class Post(models.Model):
     @classmethod
     @commit_on_success
     def clear_ngrams(cls, post_ids=None, force=False):
-        q = cls.objects.filter(article_ngrams_extracted = True).only('id')
+        q = cls.objects.filter(article_ngrams_extracted=True).only('id')
         if post_ids:
             q = q.filter(id__in=post_ids)
         total = q.count()

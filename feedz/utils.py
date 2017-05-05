@@ -1,15 +1,15 @@
 import sys
 import logging
-import pytz
 import importlib
 from datetime import datetime
 
+import pytz
 from six import string_types
-
 from chardet.universaldetector import UniversalDetector
 
 from django.utils.timezone import utc
 from django.utils.translation import ungettext, ugettext as _
+from django.conf import settings
 
 _logger = None
 
@@ -102,7 +102,7 @@ def truncate_field_data(model, data):
 
 def get_default_logger():
     """Get the default logger for this application."""
-    global _logger
+    global _logger # pylint: disable=global-statement
 
     if _logger is None:
         _logger = logging.getLogger("feedz")
@@ -119,16 +119,17 @@ def get_encoding(filename):
     #detector.reset()
     for line in open(filename, 'rb'):
         detector.feed(line)
-        if detector.done: break
+        if detector.done:
+            break
     detector.close()
     return detector.result
 
 def get_article_extractor_func():
     if not settings.FEEDZ_ARTICLE_EXTRACTOR:
         return
-    
+
     function_string = settings.FEEDZ_ARTICLE_EXTRACTOR
-    mod_name, func_name = function_string.rsplit('.',1)
+    mod_name, func_name = function_string.rsplit('.', 1)
     mod = importlib.import_module(mod_name)
     func = getattr(mod, func_name)
     result = func()

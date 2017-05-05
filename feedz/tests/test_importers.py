@@ -5,21 +5,22 @@ import os
 import time
 import socket
 import tempfile
-import unittest2 as unittest
-import feedparser
-import pytz
 from datetime import datetime
+
+import feedparser
+
+import unittest2 as unittest
+
+import pytz
 
 from six.moves import http_client as http
 from six.moves import UserDict
-
-from django.contrib.auth import authenticate
 
 from feedz.importers import FeedImporter
 from feedz.exceptions import FeedCriticalError
 from feedz.exceptions import TimeoutError, FeedNotFoundError
 from feedz import models
-from feedz.models import Feed, Post
+from feedz.models import Feed
 from feedz import feedutil
 from feedz.utils import get_encoding
 
@@ -324,6 +325,7 @@ src="http://www.labandepasdessinee.com/bpd/images/saison3/261
         class MockFeed(UserDict):
 
             def __init__(self, status, href):
+                super(UserDict, self).__init__()
                 self.href = href
                 self.data = {"status": status}
 

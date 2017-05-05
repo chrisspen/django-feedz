@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.contrib import admin
 from django.contrib.admin import SimpleListFilter
 from django.utils.translation import ugettext_lazy as _
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 
 from feedz import conf
 from feedz.models import (

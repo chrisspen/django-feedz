@@ -1,7 +1,8 @@
-from feedz import conf
 import importlib
 
 from six import string_types
+
+from feedz import conf
 
 BACKEND_ALIASES = {
     "database": "feedz.backends.database.DatabaseBackend",
@@ -11,7 +12,7 @@ BACKEND_ALIASES = {
 _backend_cache = {}
 
 
-def symbol_by_name(name, aliases={}, imp=None, package=None,
+def symbol_by_name(name, aliases=None, imp=None, package=None,
         sep='.', default=None, **kwargs):
     """Get symbol by qualified name.
 
@@ -45,6 +46,7 @@ def symbol_by_name(name, aliases={}, imp=None, package=None,
         >>> symbol_by_name(TaskPool) is TaskPool
         True
     """
+    aliases = aliases or {}
 
     if imp is None:
         imp = importlib.import_module

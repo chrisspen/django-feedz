@@ -100,14 +100,14 @@ class PostContentOptimizer(object):
             html = html[6:-7] # strip <body></body> tags
         else:
             html = str(soup).strip()
-            
+
         if strip_br:
             html = re.sub(r'<br[^>]+>', '', html, flags=re.M|re.I).strip()
-        
+
         if not tagged and strip_container:
             html = re.sub(r'^<[^>]+>', '', html)
             html = re.sub(r'<[^>]+>$', '', html)
-        
+
         return html
 
     def remove_excessive_br(self, soup):

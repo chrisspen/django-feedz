@@ -7,8 +7,8 @@ def suite():
     loader = unittest.TestLoader()
     tests = loader.discover(os.path.dirname(__file__), pattern='test*.py', top_level_dir=None)
 
-    suite = unittest.TestSuite()
+    s = unittest.TestSuite()
     for test in tests:
-        suite.addTest(test)
+        s.addTest(test)
 
-    return suite
+    return s

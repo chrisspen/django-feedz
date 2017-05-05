@@ -2,13 +2,15 @@ from __future__ import print_function
 import time
 import re
 import socket
-import feedparser
-from pprint import pprint
 from datetime import datetime
+
+import feedparser
 
 from six.moves import http_client as http
 from six import text_type
 from six.moves.urllib.request import Request, urlopen
+
+from django.utils.timezone import utc
 
 from feedz import conf
 from feedz import models
@@ -16,7 +18,6 @@ from feedz import feedutil
 from feedz import exceptions
 from feedz.utils import get_default_logger, truncate_field_data
 from feedz.backends import backend_or_default
-from django.utils.timezone import utc
 
 class FeedImporter(object):
     """Import/Update feeds.
@@ -302,7 +303,7 @@ class FeedImporter(object):
     def import_entry(self, entry, feed_obj):
         """
         Import feed post entry.
-        
+
         Note, feed_obj.feed_url can be either a URL or full RSS document.
         """
         from feedz.models import BlacklistedDomain

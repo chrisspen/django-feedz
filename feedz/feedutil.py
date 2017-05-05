@@ -1,21 +1,23 @@
 import time
 import urllib
 import re
-import pytz
 from base64 import b64encode
 from datetime import datetime, timedelta
+import hashlib
+
+import pytz
 
 from six.moves.urllib.parse import urljoin
 
 #from django.utils.text import truncate_html_words
 from django.utils.text import Truncator
-
-import hashlib
-md5_constructor = hashlib.md5
+from django.utils.timezone import utc
 
 from feedz import conf
 from feedz.optimization import PostContentOptimizer
-from django.utils.timezone import utc
+
+md5_constructor = hashlib.md5
+
 feed_content_optimizer = PostContentOptimizer()
 
 GUID_FIELDS = ("title", "link", "author")
@@ -56,7 +58,6 @@ def generate_guid(entry):
 
 def search_alternate_links(feed):
     """Search for alternate links into a parsed feed."""
-    print(u'feed:',feed)
     if not feed.get("entries", 1):
         return [link.get("href") or ""
                     for link in feed["feed"].get("links") or []
@@ -65,12 +66,15 @@ def search_alternate_links(feed):
 
 
 links = re.compile(r"""<\s*link[^>]*>""")
+
 atom = re.compile(r"""<[^>]*
     type\s*=\s*["|']application/atom\+xml['|"][^>]*
     >""", re.VERBOSE)
+
 rss = re.compile(r"""<[^>]*
     type\s*=\s*["|']application/rss\+xml['|"][^>]*
     >""", re.VERBOSE)
+
 href = re.compile(r"""href\s*=\s*["|'](?P<href>[^"']*)["|'][^>]*""")
 
 
@@ -98,8 +102,8 @@ def search_links_url(url, source=''):
         finally:
             sock.close()
 
-    links = regex_html(source)
-    return [urljoin(url, link) for link in links]
+    _links = regex_html(source)
+    return [urljoin(url, link) for link in _links]
 
 
 def get_entry_guid(feed_obj, entry):
@@ -159,7 +163,7 @@ def find_post_content(feed_obj, entry):
         content = entry["content"][0]["value"]
     except (IndexError, KeyError):
         content = entry.get("description") or entry.get("summary") or ""
-    
+
     if '<img' not in content:
         # if there's no image and the we add an image to the feed
         def build_img(img_dict):

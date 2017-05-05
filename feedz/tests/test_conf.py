@@ -1,8 +1,8 @@
-import unittest2 as unittest
 from datetime import timedelta
 
-from feedz import conf
+import unittest2 as unittest
 
+from feedz import conf
 
 class TestConf(unittest.TestCase):
 

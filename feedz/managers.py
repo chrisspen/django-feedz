@@ -1,5 +1,6 @@
-import pytz
 from datetime import timedelta, datetime
+
+import pytz
 
 from django.db import models
 from django.db.models import Q
@@ -9,12 +10,7 @@ from django.utils import timezone
 
 from feedz.utils import truncate_field_data
 
-""" .. data:: DEFAULT_POST_LIMIT
-
-    The default limit of number of posts to keep in a feed.
-    Default is 5 posts.
-
-"""
+# The default limit of number of posts to keep in a feed.
 DEFAULT_POST_LIMIT = 25
 
 
@@ -44,7 +40,7 @@ class ExtendedQuerySet(QuerySet):
         threshold = datetime.now(pytz.utc) - timedelta(seconds=interval)
         return self.filter(date_last_refresh__lt=threshold)
 
-    def ratio(self, min=None, max=None):
+    def ratio(self, min=None, max=None): # pylint: disable=redefined-builtin
         """Select feeds based on ratio.
 
         :param min: Don't include feeds with a ratio lower than this.
@@ -58,7 +54,7 @@ class ExtendedQuerySet(QuerySet):
             query["ratio__lt"] = max
         return self.filter(**query)
 
-    def frequency(self, min=None, max=None):
+    def frequency(self, min=None, max=None): # pylint: disable=redefined-builtin
         """Select feeds based on update frequency.
 
         :param min: Don't include feeds with a frequency lower than this.
@@ -78,7 +74,7 @@ class ExtendedManager(models.Manager):
 
     def get_query_set(self):
         return self.get_queryset() # Renamed in Django 1.6.
-        
+
     def get_queryset(self):
         return ExtendedQuerySet(self.model)
 
@@ -106,8 +102,7 @@ class FeedManager(ExtendedManager):
             qs = self
         return qs.filter(
             Q(date_last_refresh__isnull=True)|\
-            Q(  date_last_refresh__isnull=False,
-                date_last_refresh__lte=timezone.now()-timedelta(days=days)))
+            Q(date_last_refresh__isnull=False, date_last_refresh__lte=timezone.now()-timedelta(days=days)))
 
     def get_fresh(self, days=1, qs=None):
         if qs is None:
