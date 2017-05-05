@@ -1,9 +1,14 @@
 import sys
 import logging
 import pytz
+import importlib
 from datetime import datetime
-from django.utils.timezone import utc
 
+from six import string_types
+
+from chardet.universaldetector import UniversalDetector
+
+from django.utils.timezone import utc
 from django.utils.translation import ungettext, ugettext as _
 
 _logger = None
@@ -43,15 +48,15 @@ def naturaldate(date):
     delta_midnight = today - date
 
     days = delta.days
-    hours = round(delta.seconds / 3600, 0)
-    minutes = delta.seconds / 60
+    hours = delta.seconds//3600
+    minutes = (delta.seconds//60)%60
 
     if days < 0:
         return JUST_NOW
 
     if days == 0:
         if hours == 0:
-            if minutes > 0:
+            if int(minutes) > 0:
                 return _un(MINUTES_AGO, n=minutes) % {"minutes": minutes}
             else:
                 return JUST_NOW
@@ -78,9 +83,8 @@ def truncate_by_field(field, value):
     :param value: The value to truncate.
 
     """
-    if isinstance(value, basestring) and \
-            hasattr(field, "max_length") and value > field.max_length:
-                return value[:field.max_length]
+    if isinstance(value, string_types) and field.max_length and hasattr(field, "max_length") and len(value) > field.max_length:
+        return value[:field.max_length]
     return value
 
 
@@ -93,8 +97,7 @@ def truncate_field_data(model, data):
 
     """
     fields = dict((field.name, field) for field in model._meta.fields)
-    return dict((name, truncate_by_field(fields[name], value))
-                    for name, value in data.items())
+    return dict((name, truncate_by_field(fields[name], value)) for name, value in data.items())
 
 
 def get_default_logger():
@@ -110,3 +113,23 @@ def get_default_logger():
         _logger.addHandler(channel)
         _logger.setLevel(logging.DEBUG)
     return _logger
+
+def get_encoding(filename):
+    detector = UniversalDetector()
+    #detector.reset()
+    for line in open(filename, 'rb'):
+        detector.feed(line)
+        if detector.done: break
+    detector.close()
+    return detector.result
+
+def get_article_extractor_func():
+    if not settings.FEEDZ_ARTICLE_EXTRACTOR:
+        return
+    
+    function_string = settings.FEEDZ_ARTICLE_EXTRACTOR
+    mod_name, func_name = function_string.rsplit('.',1)
+    mod = importlib.import_module(mod_name)
+    func = getattr(mod, func_name)
+    result = func()
+    return result

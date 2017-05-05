@@ -34,7 +34,7 @@ class TestNaturalDate(unittest.TestCase):
         self.assertEqual(naturaldate(now), "just now")
 
     def test_seconds_ago(self):
-        for n in xrange(0, 59 + 1):
+        for n in range(0, 59 + 1):
             n_seconds_ago = datetime.now(pytz.utc) - timedelta(seconds=n)
             self.assertEqual(naturaldate(n_seconds_ago), "just now")
 
@@ -43,17 +43,16 @@ class TestNaturalDate(unittest.TestCase):
         self.assertEqual(naturaldate(one_minute_ago), "1 minute ago")
 
     def test_minutes_ago(self):
-        for n in xrange(2, 59 + 1):
+        for n in range(2, 59 + 1):
             n_minutes_ago = datetime.now(pytz.utc) - timedelta(minutes=n)
-            self.assertEqual(naturaldate(n_minutes_ago),
-                              "%d minutes ago" % n)
+            self.assertEqual(naturaldate(n_minutes_ago), "%d minutes ago" % n)
 
     def test_one_hour_ago(self):
         one_hour_ago = datetime.now(pytz.utc) - timedelta(hours=1)
         self.assertEqual(naturaldate(one_hour_ago), "1 hour ago")
 
     def test_hours_ago(self):
-        for n in xrange(2, 24):
+        for n in range(2, 24):
             n_hours_ago = datetime.now(pytz.utc) - timedelta(hours=n)
             self.assertEqual(naturaldate(n_hours_ago),
                 "%d hours ago" % n)
@@ -75,7 +74,7 @@ class TestNaturalDate(unittest.TestCase):
         self.assertEqual(naturaldate(one_week_ago), "1 week ago")
 
     def test_weeks_ago(self):
-        for n in xrange(2, 5):
+        for n in range(2, 5):
             n_weeks_ago = datetime.now(pytz.utc) - timedelta(days=n * 7)
             self.assertEqual(naturaldate(n_weeks_ago), "%d weeks ago" % n)
 
@@ -84,7 +83,7 @@ class TestNaturalDate(unittest.TestCase):
         self.assertEqual(naturaldate(one_month_ago), "1 month ago")
 
     def test_months_ago(self):
-        for n in xrange(2, 13):
+        for n in range(2, 13):
             n_months_ago = datetime.now(pytz.utc) - timedelta(days=n * 30)
             self.assertEqual(naturaldate(n_months_ago), "%d months ago" % n)
 
@@ -93,7 +92,7 @@ class TestNaturalDate(unittest.TestCase):
         self.assertEqual(naturaldate(one_year_ago), "1 year ago")
 
     def test_years_ago(self):
-        for n in xrange(2, 30):
+        for n in range(2, 30):
             n_years_ago = datetime.now(pytz.utc) - timedelta(days=n * 365)
             self.assertEqual(naturaldate(n_years_ago),
                 "%d years ago" % n)

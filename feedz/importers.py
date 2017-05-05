@@ -3,11 +3,12 @@ import time
 import re
 import socket
 import feedparser
-import httplib as http
-import urllib2
 from pprint import pprint
-
 from datetime import datetime
+
+from six.moves import http_client as http
+from six import text_type
+from six.moves.urllib.request import Request, urlopen
 
 from feedz import conf
 from feedz import models
@@ -16,11 +17,6 @@ from feedz import exceptions
 from feedz.utils import get_default_logger, truncate_field_data
 from feedz.backends import backend_or_default
 from django.utils.timezone import utc
-
-try:
-    import webarticle2text
-except ImportError:
-    webarticle2text = None
 
 class FeedImporter(object):
     """Import/Update feeds.
@@ -118,7 +114,7 @@ class FeedImporter(object):
                 contentlen = int(headers.get("content-length") or 0)
                 if contentlen > maxlen:
                     raise exceptions.FeedCriticalError(
-                        unicode(models.FEED_GENERIC_ERROR_TEXT))
+                        text_type(models.FEED_GENERIC_ERROR_TEXT))
 
             feed = self.parser.parse(feed_url,
                                      etag=etag,
@@ -130,15 +126,15 @@ class FeedImporter(object):
 
     def early_headers(self, feed_url):
 
-        class HeadRequest(urllib2.Request):
+        class HeadRequest(Request):
 
             def get_method(self):
                 return "HEAD"
 
-        return urllib2.urlopen(HeadRequest(feed_url)).headers
+        return urlopen(HeadRequest(feed_url)).headers
 
     def real_headers(self, feed_url):
-        return urllib2.urlopen(urllib2.Request(feed_url))
+        return urlopen(Request(feed_url))
 
     def import_feed(self, feed_url, force=None, local=False):
         """Import feed.
@@ -160,7 +156,7 @@ class FeedImporter(object):
             except socket.timeout:
                 self.feed_model.objects.create(feed_url=feed_url, sort=0)
                 raise exceptions.TimeoutError(
-                        unicode(models.FEED_TIMEDOUT_ERROR_TEXT))
+                        text_type(models.FEED_TIMEDOUT_ERROR_TEXT))
             except Exception:
                 feed = {"status": 500}
 
@@ -169,10 +165,10 @@ class FeedImporter(object):
             status = feed.get("status", default_status)
             if status == http.NOT_FOUND:
                 raise exceptions.FeedNotFoundError(
-                        unicode(models.FEED_NOT_FOUND_ERROR_TEXT))
+                        text_type(models.FEED_NOT_FOUND_ERROR_TEXT))
             if status not in models.ACCEPTED_STATUSES:
                 raise exceptions.FeedCriticalError(
-                        unicode(models.FEED_GENERIC_ERROR_TEXT),
+                        text_type(models.FEED_GENERIC_ERROR_TEXT),
                         status=status)
 
             # Feed can be local/fetched with a HTTP client.
@@ -364,15 +360,11 @@ class FeedImporter(object):
             return
 
         if not post.article_content and conf.GET_ARTICLE_CONTENT:
-            if webarticle2text:
-                self.logger.debug('Download article content from %s...' % post.link)
-                try:
-                    post.retrieve_article_content()
-                #except urllib2.HTTPError, e:
-                except Exception, e:
-                    self.logger.error('Error: Unable to retrieve %s: %s' % (post.link, e))
-            else:
-                self.logger.warn('Unable to download article content. GET_ARTICLE_CONTENT = True but webarticle2text not installed.')
+            self.logger.debug('Download article content from %s...' % post.link)
+            try:
+                post.retrieve_article_content()
+            except Exception as e:
+                self.logger.error('Error: Unable to retrieve %s: %s' % (post.link, e))
 
         if self.include_enclosures:
             post.enclosures.add(*(self.get_enclosures(entry) or []))

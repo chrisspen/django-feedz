@@ -20,7 +20,7 @@ DEFAULT_POST_LIMIT = 25
 
 def update_with_dict(obj, fields):
     """Update and save a model from the values of a :class:`dict`."""
-    set_value = lambda (name, val): setattr(obj, name, val)
+    set_value = lambda name, val: setattr(obj, name, val)
     map(set_value, fields.items())
     obj.save()
     return obj

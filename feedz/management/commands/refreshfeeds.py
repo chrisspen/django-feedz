@@ -49,7 +49,7 @@ def refresh_feed_helper(feed_id, cleanup=True):
     """
     Refreshes a specific feed.
     """
-    print 'Refreshing feed %s...' % feed_id
+    print('Refreshing feed %s...' % feed_id)
     if cleanup:
         connection.close()
     importer = FeedImporter()
@@ -102,7 +102,7 @@ class Command(NoArgsCommand):
         if max_feeds:
             q = q[:max_feeds]
         total = q.count()
-        print '%i feeds found' % total
+        print('%i feeds found' % total)
         if dryrun:
             return
 

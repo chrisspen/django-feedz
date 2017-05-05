@@ -1,11 +1,11 @@
 import time
 import urllib
-import urllib2
 import re
 import pytz
-
 from base64 import b64encode
 from datetime import datetime, timedelta
+
+from six.moves.urllib.parse import urljoin
 
 #from django.utils.text import truncate_html_words
 from django.utils.text import Truncator
@@ -18,7 +18,7 @@ from feedz.optimization import PostContentOptimizer
 from django.utils.timezone import utc
 feed_content_optimizer = PostContentOptimizer()
 
-GUID_FIELDS = frozenset(("title", "link", "author"))
+GUID_FIELDS = ("title", "link", "author")
 
 def truncate_html_words(content, num=None):
 #        content = truncate_html_words(content, conf.DEFAULT_ENTRY_WORD_LIMIT)
@@ -45,18 +45,18 @@ def safe_encode(value):
     b64 encoding."""
     try:
         return value.encode("utf-8")
-    except UnicodeDecodeError:
+    except (UnicodeDecodeError, AttributeError):
         return b64encode(value)
 
 
 def generate_guid(entry):
     """Generate missing guid for post entry."""
-    return md5sum("|".join(safe_encode(entry.get(key) or "")
-                              for key in GUID_FIELDS))
+    return md5sum(b"|".join(safe_encode(entry.get(key) or b"") for key in GUID_FIELDS))
 
 
 def search_alternate_links(feed):
     """Search for alternate links into a parsed feed."""
+    print(u'feed:',feed)
     if not feed.get("entries", 1):
         return [link.get("href") or ""
                     for link in feed["feed"].get("links") or []
@@ -91,7 +91,7 @@ def search_links_url(url, source=''):
     if not source:
         try:
             sock = urllib.urlopen(url)
-        except IOError, e:
+        except IOError as e:
             return []
         try:
             source = sock.read()
@@ -99,7 +99,7 @@ def search_links_url(url, source=''):
             sock.close()
 
     links = regex_html(source)
-    return [urllib2.urlparse.urljoin(url, link) for link in links]
+    return [urljoin(url, link) for link in links]
 
 
 def get_entry_guid(feed_obj, entry):
@@ -159,7 +159,7 @@ def find_post_content(feed_obj, entry):
         content = entry["content"][0]["value"]
     except (IndexError, KeyError):
         content = entry.get("description") or entry.get("summary") or ""
-
+    
     if '<img' not in content:
         # if there's no image and the we add an image to the feed
         def build_img(img_dict):
@@ -181,9 +181,9 @@ def find_post_content(feed_obj, entry):
             img = ""
         content = img + content
     try:
-        content = truncate_html_words(content, num=conf.DEFAULT_ENTRY_WORD_LIMIT) 
+        content = truncate_html_words(content, num=conf.DEFAULT_ENTRY_WORD_LIMIT)
     except UnicodeDecodeError:
-        content = ""
+        return ''
 
     return feed_content_optimizer.optimize(content)
 

@@ -1,9 +1,11 @@
 from feedz import conf
 import importlib
 
+from six import string_types
+
 BACKEND_ALIASES = {
     "database": "feedz.backends.database.DatabaseBackend",
-    "redis": "feedz.backends.pyredis.RedisBackend",
+    #"redis": "feedz.backends.pyredis.RedisBackend",
 }
 
 _backend_cache = {}
@@ -47,7 +49,7 @@ def symbol_by_name(name, aliases={}, imp=None, package=None,
     if imp is None:
         imp = importlib.import_module
 
-    if not isinstance(name, basestring):
+    if not isinstance(name, string_types):
         # already a class
         return name
 
@@ -59,9 +61,8 @@ def symbol_by_name(name, aliases={}, imp=None, package=None,
     try:
         try:
             module = imp(module_name, package=package, **kwargs)
-        except ValueError, exc:
-            raise ValueError(
-                    "Couldn't import %r: %s" % (name, exc)), sys.exc_info()[2]
+        except ValueError as e:
+            raise ValueError("Couldn't import %r: %s" % (name, e))
         return getattr(module, cls_name) if cls_name else module
     except (ImportError, AttributeError):
         if default is None:
@@ -77,6 +78,6 @@ def get_backend_cls(backend):
 
 def backend_or_default(backend=None):
     backend = backend or conf.POST_STORAGE_BACKEND
-    if isinstance(backend, basestring):
+    if isinstance(backend, string_types):
         return get_backend_cls(backend)()
     return backend

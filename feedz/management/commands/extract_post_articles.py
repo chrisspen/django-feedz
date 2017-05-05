@@ -1,7 +1,6 @@
 from __future__ import with_statement, print_function
 
 import sys
-import urllib2
 from optparse import make_option
 from datetime import datetime, timedelta
 import traceback
@@ -9,6 +8,8 @@ from StringIO import StringIO
 
 import warnings
 #warnings.simplefilter('error', DeprecationWarning)
+
+from six.moves.urllib.error import HTTPError
 
 from django.core.management.base import BaseCommand
 from django.db.models import Q
@@ -70,13 +71,13 @@ class Command(BaseCommand):
         success_count = 0 # successfully retrieved non-empty content
         error_count = 0 # any type of exception was thrown
         meh_count = 0 # no errors were thrown, even if we didn't get content
-        print '%i posts without an article.' % (total,)
+        print('%i posts without an article.' % (total,))
         if dryrun:
             return
         for post in q.iterator():
             i += 1
-            print '\rProcessing post %i (%i of %i, %i success, %i errors, %i mehs)...' \
-                % (post.id, i, total, success_count, error_count, meh_count),
+            sys.stdout.write('\rProcessing post %i (%i of %i, %i success, %i errors, %i mehs)...' \
+                % (post.id, i, total, success_count, error_count, meh_count))
             sys.stdout.flush()
             if Job:
                 Job.update_progress(total_parts=total, total_parts_complete=i)
@@ -84,15 +85,15 @@ class Command(BaseCommand):
                 post.retrieve_article_content(force=options['force'])
                 success_count += bool(len((post.article_content or '').strip()))
                 meh_count += not bool(len((post.article_content or '').strip()))
-            except urllib2.HTTPError, e:
+            except HTTPError as e:
                 error_count += 1
-                print>>sys.stderr
-                print>>sys.stderr, 'Error: Unable to retrieve %s: %s' % (post.link, e)
+                print(file=sys.stderr)
+                print('Error: Unable to retrieve %s: %s' % (post.link, e), file=sys.stderr)
                 post.article_content_error_code = e.code
                 post.article_content_error_reason = e.reason
                 post.article_content_success = False
                 post.save()
-            except Exception, e:
+            except Exception as e:
                 post.article_content_success = False
                 ferr = StringIO()
                 traceback.print_exc(file=ferr)
@@ -100,9 +101,9 @@ class Command(BaseCommand):
                 post.article_content_error = ferr.getvalue()
                 post.save()
                 error_count += 1
-                print>>sys.stderr
-                print>>sys.stderr, 'Error: Unable to retrieve %s: %s' % (post.link, e)
+                print(sys.stderr)
+                print('Error: Unable to retrieve %s: %s' % (post.link, e), file=sys.stderr)
         print
-        print '-'*80
-        print '%i successes' % success_count
-        print '%i errors' % error_count
+        print('-'*80)
+        print('%i successes' % success_count)
+        print('%i errors' % error_count)

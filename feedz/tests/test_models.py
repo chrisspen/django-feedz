@@ -1,13 +1,17 @@
+from __future__ import print_function
+
 import unittest2 as unittest
-import httplib as http
 import pytz
 from datetime import datetime
 from uuid import uuid4
 
-from feedz import models
-from feedz.utils import naturaldate
+from six.moves import http_client as http
+from six import text_type
+
 from django.utils.timezone import utc
 
+from feedz import models
+from feedz.utils import naturaldate
 
 def gen_unique_id():
     return str(uuid4())
@@ -17,11 +21,11 @@ class TestCategory(unittest.TestCase):
 
     def test__unicode__(self):
         cat = models.Category(name="foo", domain="bar")
-        self.assertIn("foo", unicode(cat))
-        self.assertIn("bar", unicode(cat))
+        self.assertIn("foo", text_type(cat))
+        self.assertIn("bar", text_type(cat))
 
         cat = models.Category(name="foo")
-        self.assertIn("foo", unicode(cat))
+        self.assertIn("foo", text_type(cat))
 
 
 class TestEnclosure(unittest.TestCase):
@@ -29,9 +33,9 @@ class TestEnclosure(unittest.TestCase):
     def test__unicode__(self):
         en = models.Enclosure(url="http://e.com/media/i.jpg",
                 type="image/jpeg", length=376851)
-        self.assertIn("http://e.com/media/i.jpg", unicode(en))
-        self.assertIn("image/jpeg", unicode(en))
-        self.assertIn("376851", unicode(en))
+        self.assertIn("http://e.com/media/i.jpg", text_type(en))
+        self.assertIn("image/jpeg", text_type(en))
+        self.assertIn("376851", text_type(en))
 
 
 class TestPost(unittest.TestCase):
@@ -43,7 +47,8 @@ class TestPost(unittest.TestCase):
 
     def test__unicode__(self):
         post = models.Post(feed=self.feed, title="foo")
-        self.assertIn("foo", unicode(post))
+        print('text_type(post):', text_type(post))
+        self.assertIn("foo", text_type(post))
 
     def test_auto_guid(self):
         p1 = models.Post(feed=self.feed, title="foo")
@@ -67,8 +72,8 @@ class TestFeed(unittest.TestCase):
 
     def test__unicode__(self):
         f = models.Feed(name="foo", feed_url="http://example.com")
-        self.assertIn("foo", unicode(f))
-        self.assertIn("(http://example.com)", unicode(f))
+        self.assertIn("foo", text_type(f))
+        self.assertIn("(http://example.com)", text_type(f))
 
     def test_error_for_status(self):
         f = models.Feed(name="foo", feed_url="http://example.com")

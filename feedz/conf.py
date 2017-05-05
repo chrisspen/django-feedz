@@ -149,6 +149,10 @@ FSCK_ON_UPDATE = getattr(settings,
                          "FEEDZ_FSCK_ON_UPDATE",
                          False)
 
+FEEDZ_ARTICLE_EXTRACTOR = getattr(settings,
+                         "FEEDZ_ARTICLE_EXTRACTOR",
+                         None)
+
 GET_ARTICLE_CONTENT = getattr(settings, "FEEDZ_GET_ARTICLE_CONTENT", False)
 
 GET_ARTICLE_CONTENT_ONLY_MIME_TYPES = getattr(settings,

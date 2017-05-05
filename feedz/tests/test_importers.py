@@ -4,14 +4,15 @@ from __future__ import with_statement
 import os
 import time
 import socket
-import httplib as http
 import tempfile
 import unittest2 as unittest
 import feedparser
 import pytz
 from datetime import datetime
-from UserDict import UserDict
-from contextlib import nested
+
+from six.moves import http_client as http
+from six.moves import UserDict
+
 from django.contrib.auth import authenticate
 
 from feedz.importers import FeedImporter
@@ -20,6 +21,7 @@ from feedz.exceptions import TimeoutError, FeedNotFoundError
 from feedz import models
 from feedz.models import Feed, Post
 from feedz import feedutil
+from feedz.utils import get_encoding
 
 data_path = os.path.join(os.path.dirname(__file__), "data")
 
@@ -31,9 +33,11 @@ def get_data_filename(name):
 
 
 def get_data_file(name, mode="r"):
-    with open(get_data_filename(name), mode) as file:
-        return file.read()
-
+    filename = get_data_filename(name)
+    encoding = get_encoding(filename)['encoding']
+    #print('encoding:', encoding)
+    with open(get_data_filename(name), mode, encoding=encoding, errors='ignore') as f:
+        return f.read()
 
 class TestRegressionOPAL578(unittest.TestCase):
 
@@ -53,7 +57,7 @@ class TestRegressionOPAL578(unittest.TestCase):
 
         def test_file(filename):
             try:
-                with nested(open(filename), open(spool, "w")) as (r, w):
+                with open(filename) as r, open(spool, "w") as w:
                     w.write(r.read())
                 return self.assertImportFeed(spool,
                         "Saturday Morning Breakfast Cereal (updated daily)")
@@ -158,7 +162,7 @@ src="http://www.labandepasdessinee.com/bpd/images/saison3/261
         first_post = posts[0]
         self.assertEqual(first_post.guid, "Lifehacker-5147831")
         fmt = '%Y-%m-%d %H:%M:%S %Z%z'
-        expected_dt = datetime(2009, 02, 06, 04, 30+7, 0, 0, tzinfo=pytz.timezone('US/Pacific')).astimezone(pytz.utc)
+        expected_dt = datetime(2009, 2, 6, 4, 30+7, 0, 0, tzinfo=pytz.timezone('US/Pacific')).astimezone(pytz.utc)
         print('expected_dt:', expected_dt)
         self.assertEqual(first_post.date_updated, expected_dt)
 
@@ -382,7 +386,7 @@ src="http://www.labandepasdessinee.com/bpd/images/saison3/261
         feed = feedparser.parse(feed_str)
         for entry in feed["entries"]:
             guid = feedutil.get_entry_guid(feed, entry)
-            self.assertTrue(guid.startswith("http://"))
+            self.assertTrue(guid.startswith(b"http://"))
 
         feed_str = get_data_file("no-steam.rss")
         feed = feedparser.parse(feed_str)

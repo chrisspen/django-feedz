@@ -1,4 +1,4 @@
-import httplib as http
+from six.moves import http_client as http
 
 
 class TimeoutError(Exception):

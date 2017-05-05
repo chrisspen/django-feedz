@@ -1,7 +1,12 @@
-import BeautifulSoup
-from HTMLParser import HTMLParseError
-from django.conf import settings
 import re
+#import BeautifulSoup
+from bs4 import BeautifulSoup
+from bs4.element import Tag
+#from HTMLParser import HTMLParseError
+
+from six.moves.html_parser import HTMLParseError
+
+from django.conf import settings
 
 FEEDZ_REMOVE_TRACKERS = getattr(settings,
     "FEEDZ_REMOVE_TRACKERS", True)
@@ -73,27 +78,44 @@ class PostContentOptimizer(object):
                 return True
         return False
 
-    def optimize(self, html):
+    def optimize(self, html, only_visible=True, strip_br=True, strip_container=False):
         """Remove unecessary spaces, <br> and image tracker."""
 
         # Remove uneccesary white spaces
         html = html.strip()
+        if '<' not in html and '>' not in html:
+            return html
+        tagged = html.startswith('<') and html.endswith('>')
+
         try:
-            soup = BeautifulSoup.BeautifulSoup(html)
+            soup = BeautifulSoup(html, 'lxml')#'html5lib')
             self.remove_excessive_br(soup)
             if FEEDZ_REMOVE_TRACKERS:
                 self.remove_trackers(soup)
         except HTMLParseError:
             return html
 
-        return str(soup).strip()
+        if only_visible:
+            html = str(soup.findAll('body')[0]).strip()
+            html = html[6:-7] # strip <body></body> tags
+        else:
+            html = str(soup).strip()
+            
+        if strip_br:
+            html = re.sub(r'<br[^>]+>', '', html, flags=re.M|re.I).strip()
+        
+        if not tagged and strip_container:
+            html = re.sub(r'^<[^>]+>', '', html)
+            html = re.sub(r'<[^>]+>$', '', html)
+        
+        return html
 
     def remove_excessive_br(self, soup):
         # start with true to remove any starting br tag
         last_one_is_br = True
         children = soup.childGenerator()
         for el in children:
-            if isinstance(el, BeautifulSoup.Tag):
+            if isinstance(el, Tag):
                 if el.name == 'br':
                     if last_one_is_br:
                         el.replaceWith("")

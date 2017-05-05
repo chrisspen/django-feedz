@@ -35,7 +35,7 @@ class FreshStaleListFilter(SimpleListFilter):
             self.parameter_val = request.GET.get(self.parameter_name, self.default_value)
             if self.parameter_val is not None:
                 self.parameter_val = bool(self.parameter_val in (True, 'True', 1, '1'))
-        except Exception, e:
+        except Exception as e:
             pass
         super(FreshStaleListFilter, self).__init__(request, params, model, model_admin)
 
@@ -106,7 +106,7 @@ class FeedAdmin(BaseModelAdmin):
             url = get_admin_changelist_url(Post) + ('?feed__id=%i' % obj.id)
             count = obj.post_set.all().count()
             return '<a href="%s" target="_blank"><input type="button" value="View %i" /></a>' % (url, count)
-        except Exception, e:
+        except Exception as e:
             return str(e)
     post_link.short_description = 'Posts'
     post_link.allow_tags = True

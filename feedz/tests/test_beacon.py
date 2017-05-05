@@ -21,30 +21,27 @@ class test_BeaconRemover(unittest.TestCase):
 
     def test_strip_tracker(self):
         some_text = """test %s %s"""
-        to_img_tag = """<img src="%s" />"""
+        to_img_tag = """<img src="%s"/>"""
         img1 = to_img_tag % IMG2
         img2 = to_img_tag % "http://feeds.feedburner.com/"
 
         content = some_text % (img1, img2)
         expected_result = some_text % ("", img2)
 
-        self.assertEqual(self.tracker_remover.optimize(content),
-            expected_result)
+        self.assertEqual(self.tracker_remover.optimize(content, strip_container=True), expected_result)
 
     def test_no_optimization(self):
         self.assertEqual(self.tracker_remover.optimize(" test "), "test")
 
-    def test_parse_borken_html(self):
+    def test_parse_broken_html(self):
         broken_html = """<a< <img src="test">"""
-        self.assertEqual(self.tracker_remover.optimize(broken_html),
-            """<a>&lt; <img src="test" /></a>""")
+        self.assertEqual(self.tracker_remover.optimize(broken_html), """<a src="test"></a>""")
 
     def test_remove_extra_br(self):
         extra = """  <br /><br><br><br/> <a href="test">toto</a>
         <br><br><br>"""
-        ecpected_result = """<a href="test">toto</a>\n<br />"""
-        self.assertEqual(self.tracker_remover.optimize(extra),
-                         ecpected_result)
+        expected_result = """<a href="test">toto</a>"""
+        self.assertEqual(self.tracker_remover.optimize(extra), expected_result)
 
     def test_remove_small_image(self):
         small_image = """<img src="test" width="%d">""" % (IMG_LIMIT - 1)
@@ -55,8 +52,7 @@ class test_BeaconRemover(unittest.TestCase):
     def test_big_enough_image(self):
         big_enough_image = """<img src="test" width="%d">""" % IMG_LIMIT
         self.assertEqual(
-            self.tracker_remover.optimize(big_enough_image),
-            '<img src="test" width="%d" />' % IMG_LIMIT)
+            self.tracker_remover.optimize(big_enough_image), '<img src="test" width="%d"/>' % IMG_LIMIT)
 
     def test_remove_tracker(self):
         tracker_src = [
@@ -75,7 +71,7 @@ class test_BeaconRemover(unittest.TestCase):
         prev = optimization.FEEDZ_REMOVE_TRACKERS
         optimization.FEEDZ_REMOVE_TRACKERS = False
         try:
-            to_img_tag = """<img src="%s" />"""
+            to_img_tag = """<img src="%s"/>"""
 
             for url in SERVICE_URLS:
                 self.assertEqual(

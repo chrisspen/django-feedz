@@ -3,11 +3,14 @@ from __future__ import print_function
 import sys
 import re
 import gc
-import httplib as http
 from datetime import datetime, timedelta
 from django.utils.timezone import utc
 from collections import defaultdict
 import hashlib
+
+from six import string_types, text_type
+from six.moves import http_client as http
+from six.moves.urllib.parse import urlparse
 
 from django.conf import settings
 from django.db import models, reset_queries
@@ -37,7 +40,7 @@ from fake_useragent import UserAgent
 #     Job = None
 
 from feedz import conf
-from feedz.utils import naturaldate
+from feedz.utils import naturaldate, get_article_extractor_func
 from feedz.managers import FeedManager, PostManager
 from feedz.managers import EnclosureManager, CategoryManager
 from feedz.backends import backend_or_default
@@ -48,7 +51,7 @@ def parse_stripe(stripe):
     stripe_num = None
     stripe_mod = None
     if stripe:
-        assert isinstance(stripe, basestring) and len(stripe) == 2
+        assert isinstance(stripe, string_types) and len(stripe) == 2
         stripe_num,stripe_mod = stripe
         stripe_num = int(stripe_num)
         stripe_mod = int(stripe_mod)
@@ -114,7 +117,7 @@ class Category(models.Model):
         verbose_name = _(u"category")
         verbose_name_plural = _(u"categories")
 
-    def __unicode__(self):
+    def __str__(self):
         if self.domain:
             return u"%s [%s]" % (self.name, self.domain)
         return u"%s" % self.name
@@ -211,7 +214,7 @@ class Feed(models.Model):
         return (self.feed_url,)
     natural_key.dependencies = []
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s (%s)" % (self.name, self.feed_url)
 
     def fresh(self):
@@ -291,7 +294,7 @@ class Feed(models.Model):
 
     @property
     def date_last_refresh_naturaldate(self):
-        return unicode(naturaldate(self.date_last_refresh))
+        return text_type(naturaldate(self.date_last_refresh))
 
 
 def sig_reset_last_error(sender, instance, **kwargs):
@@ -332,7 +335,7 @@ class Enclosure(models.Model):
         verbose_name = _(u"enclosure")
         verbose_name_plural = _(u"enclosures")
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s %s (%d)" % (self.url, self.type, self.length)
 
 
@@ -453,10 +456,11 @@ class Post(models.Model):
 
     def auto_guid(self):
         """Automatically generate a new guid from the metadata available."""
-        return hashlib.md5("|".join((
-                    self.title, self.link, self.author))).hexdigest()
+        content = "|".join((self.title, self.link, self.author))
+        content = content.encode('utf-8')
+        return hashlib.md5(content).hexdigest()
 
-    def __unicode__(self):
+    def __str__(self):
         return u"%s" % self.title
 
     def save(self, *args, **kwargs):
@@ -485,21 +489,25 @@ class Post(models.Model):
     def date_published_naturaldate(self):
         date = self.date_published
         as_datetime = datetime(date.year, date.month, date.day, tzinfo=utc)
-        return unicode(naturaldate(as_datetime))
+        return text_type(naturaldate(as_datetime))
 
     @property
     def date_updated_naturaldate(self):
-        return unicode(naturaldate(self.date_updated))
+        return text_type(naturaldate(self.date_updated))
 
     def retrieve_article_content(self, force=False):
-        import webarticle2text
+        assert settings.FEEDZ_ARTICLE_EXTRACTOR, 'No extractor specified.'
+        
+        extractor = get_article_extractor_func()
+        
         if self.article_content and not force:
             return
-        self.article_content = webarticle2text.extractFromURL(
+        self.article_content = extractor(
             self.link,
-            only_mime_types=conf.GET_ARTICLE_CONTENT_ONLY_MIME_TYPES,
-            ignore_robotstxt=True,
-            userAgent=ua.random)
+#             only_mime_types=conf.GET_ARTICLE_CONTENT_ONLY_MIME_TYPES,
+#             ignore_robotstxt=True,
+#             userAgent=ua.random,
+        )
         self.article_content_error_code = None
         self.article_content_error_reason = None
         self.article_content_success = bool((self.article_content or '').strip())
@@ -535,7 +543,6 @@ class Post(models.Model):
             print_status('%i total records.' % (total,))
             for post in q.iterator():
                 i += 1
-                #print '\r%i of %i %.2f%%' % (i, total, i/float(total)*100),
                 message = '%i of %i %.2f%%' % (i, total, i/float(total)*100)
                 print_status(message=message, total=total, count=i)
                 post.extract_ngrams(force=force)
@@ -565,7 +572,7 @@ class Post(models.Model):
         text = self.ngramable_tokens
 
         ngrams = []
-        for n in xrange(min_n, max_n+1):
+        for n in range(min_n, max_n+1):
             ngrams.extend(ngrams_iter(sequence=text, n=n))
         ngram_counts = {}
         for ngram in ngrams:
@@ -623,7 +630,7 @@ class NGram(models.Model):
         editable=False,
         db_index=True)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.text
 
     def save(self, *args, **kwargs):
@@ -672,7 +679,7 @@ class BlacklistedDomain(models.Model):
     class Meta:
         ordering = ('domain',)
 
-    def __unicode__(self):
+    def __str__(self):
         return self.domain
 
     @classmethod
@@ -681,7 +688,6 @@ class BlacklistedDomain(models.Model):
         Returns true if the given URL matches a blacklisted domain.
         Returns false otherwise.
         """
-        from urlparse import urlparse
         url = (url or '').strip()
         if not url:
             return False
