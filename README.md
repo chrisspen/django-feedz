@@ -1,6 +1,8 @@
 Django-Feedz
 ============
 
+[![](https://img.shields.io/pypi/v/django-feedz.svg)](https://pypi.python.org/pypi/django-feedz) [![Build Status](https://img.shields.io/travis/chrisspen/django-feedz.svg?branch=master)](https://travis-ci.org/chrisspen/django-feedz) [![](https://pyup.io/repos/github/chrisspen/django-feedz/shield.svg)](https://pyup.io/repos/github/chrisspen/django-feedz)
+
 A Django model for storing and analyzing RSS/Atom feeds.
 
 Development
