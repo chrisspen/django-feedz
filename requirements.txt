@@ -1,7 +1,7 @@
 feedparser==5.2.1
 chardet==3.0.2
 celery==4.0.2
-django-celery
+django-celery==3.2.1
 #BeautifulSoup>=3.2.1
 beautifulsoup4>=4.5.3
 httplib2
