@@ -5,4 +5,4 @@ nose==1.3.7
 nose-cover3==0.1.0
 coverage==4.3.4
 django-nose==1.4.4
-redish
+redish==0.0.1
